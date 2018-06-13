@@ -59,5 +59,5 @@ def device_data(device_id):
 
     if request.method == 'GET':
         device = Device.query.filter_by(id=device_id).first()
-        data = device.retrieve_data()
+        data = device.retrieve_last(3)
         return dumps(data), 200, {'ContentType': 'application/json'}

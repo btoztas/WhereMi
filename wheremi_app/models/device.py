@@ -33,8 +33,13 @@ class Device(db.Model):
         collection.insert(document)
 
     # returns a dict with the corresponding data
-    def retrieve_data(self):
+    def retrieve_all_data(self):
         collection = mongo.db[str(self.id)]
         documents = collection.find({}, {'_id': False})
+        return documents
+
+    def retrieve_last(self, size):
+        collection = mongo.db[str(self.id)]
+        documents = collection.find().skip(collection.count() - size)
         return documents
 

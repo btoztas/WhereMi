@@ -3,13 +3,13 @@ PRODUCTION = False
 
 # DB Configurations
 if PRODUCTION:
-#    MONGO_DBNAME = 'stacker'
-#    MONGO_URI = 'mongodb://stacker:kP9K8SvB@127.0.0.1/stacker'
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://wheremi:kP9K8SvB@127.0.0.1/wheremi'
+#    MONGO_DBNAME = 'mydbname'
+#    MONGO_URI = 'mongodb://myuser:mypass@127.0.0.1/stacker'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://myuser:mypass@127.0.0.1/wheremi'
     SQLALCHEMY_TRACK_MODIFICATIONS = True
 else:
-    MONGO_DBNAME = 'wheremi'
-    MONGO_URI = 'mongodb://wheremi:wheremi123@ds155730.mlab.com:55730/wheremi'
+    MONGO_DBNAME = 'mydbname'
+    MONGO_URI = 'mongodb://myuser:mypass@127.0.0.1/stacker'
     SQLALCHEMY_DATABASE_URI = 'sqlite:////Users/brunofgo/projects/wheremi/storage.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = True
 
@@ -20,7 +20,7 @@ USER_LOGOUT_URL = '/logout'
 USER_REGISTER_URL = '/register'
 
 # CSRF
-SECRET_KEY = '1d94e52c-1c89-4515-b87a-f48cf3cb7f0b'
+SECRET_KEY = 'mysecretkey'
 CSRF_ENABLED = True
 
 # File upload rules
