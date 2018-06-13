@@ -21,7 +21,7 @@ htmlcov/
 .coverage.*
 *,cover
 
-*.wsgi
+whereami.wsgi
 migrations
 storage.db
 
