@@ -24,7 +24,7 @@ SECRET_KEY = '1d94e52c-1c89-4515-b87a-f48cf3cb7f0b'
 CSRF_ENABLED = True
 
 # File upload rules
-UPLOAD_FOLDER = 'whereami_app/static/files'
+UPLOAD_FOLDER = 'wheremi_app/static/files'
 ALLOWED_EXTENSIONS = ['png', 'jpg', 'jpeg']
 
 

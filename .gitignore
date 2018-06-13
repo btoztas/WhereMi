@@ -24,3 +24,5 @@ htmlcov/
 *.wsgi
 migrations
 storage.db
+
+files/
