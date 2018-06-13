@@ -23,7 +23,7 @@ class Device(db.Model):
 
     def __str__(self):
         return "" + str(self.id) + " - " + str(self.user_id) + " - " + self.name
-add
+
     # data must be a dict
     def save_data(self, data):
         document = dict()
