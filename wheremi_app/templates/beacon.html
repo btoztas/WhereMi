@@ -1,0 +1,95 @@
+{% extends 'blank.html' %}
+
+{% block body %}
+
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">WhereMi</a></li>
+    <li class="breadcrumb-item active"><a href="/devices">Devices</a></li>
+    <li class="breadcrumb-item active">{{ device.name }}</li>
+</ol>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <i class="fa fa-list"></i> Manage Device - {{device.name}}
+    </div>
+
+    <div class="card-body">
+        <a href="#">
+            <button class="btn btn-primary" type="button">Edit</button>
+        </a>
+        <a href="#">
+            <button class="btn btn-primary" type="button">Delete</button>
+        </a>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <i class="fa fa-info-circle"></i> {{ device.name }} - Info
+    </div>
+    <div class="card-body">
+        <table class="table" id="dataTable" width="100%" cellspacing="0">
+            <tbody>
+                <tr>
+                    <td>
+                        <b>Name:</b> {{ device.name }}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <b>Description:</b> {{ device.description }}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <b>Home Floor:</b> {{ device.home_floor.name }}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <b>Created at:</b> {{ device.created_at }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!--
+
+<div class="card mb-3">
+    <div class="card-header">
+        <i class="fa fa-list"></i> Dumps
+    </div>
+    <div class="card-body">
+        {% if dumps %}
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table" id="dataTable" width="100%" cellspacing="0">
+                    <tbody>
+                    {% for dump in dumps %}
+                    <tr>
+                        <td>
+                        </td>
+                        <td>
+                            <!-- <a data-toggle="collapse">
+                                 <button class="btn btn-primary btn-block" data-target="#expand-{{ dump.pk }}" type="button">
+                                     View
+                                 </button>
+                             </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+        You don't have any dumps listed.
+        {% endif %}
+    </div>
+</div>
+
+-->
+
+{% endblock %}

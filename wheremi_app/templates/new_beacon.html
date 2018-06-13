@@ -1,0 +1,40 @@
+{% extends 'blank.html' %}
+
+{% block body %}
+
+
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">WhereMi</a></li>
+    <li class="breadcrumb-item"><a href="/floors">Floors</a></li>
+    <li class="breadcrumb-item"><a href="/floors/{{ floor.id }}">{{ floor.name }}</a></li>
+    <li class="breadcrumb-item active"><a href="/floors/{{ floor.id }}/beacons">Beacons</a></li>
+    <li class="breadcrumb-item active">New</li>
+</ol>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <i class="fa fa-plus"></i> New beacon on floor {{ floor.name }}
+    </div>
+
+    <div class="card-body">
+        <form method="post" enctype=multipart/form-data>
+            <div class="form-group">
+                <label for="identifier">Identifier</label>
+                <br>
+                <input class="form-control" id="identifier" type="text" name="identifier" maxlength="50" required/>
+                <br>
+                <label for="name">Name</label>
+                <br>
+                <input class="form-control" id="name" type="text" name="name" maxlength="50" required/>
+                <br>
+                <label for="description">Description</label>
+                <br>
+                <input class="form-control" id="description" type="text" name="description" maxlength="150" required/>
+                <br>
+            </div>
+            <button class="btn btn-primary btn-block" type="submit">New Beacon</button>
+        </form>
+    </div>
+
+</div>
+{% endblock %}

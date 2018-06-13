@@ -1,0 +1,27 @@
+{% extends 'blank.html' %}
+{% block body %}
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active">WhereMi</li>
+    </ol>
+
+
+    <div class="card mb-3">
+        <div class="card-header">
+            <i class="fa fa-search-plus"></i> WhereMi - Manage
+        </div>
+
+        <div class="card-body">
+            <div style="padding-bottom: inherit">
+                Welcome to WhereMi platform. Here you can manage your system.
+            </div>
+            <a href="/floors">
+                <button class="btn btn-primary" type="button">My Floors</button>
+            </a>
+            <a href="/devices">
+                <button class="btn btn-primary" type="button">My Devices</button>
+            </a>
+        </div>
+
+    </div>
+
+{% endblock %}

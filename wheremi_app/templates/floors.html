@@ -1,0 +1,65 @@
+{% extends 'blank.html' %}
+
+{% block body %}
+
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">WhereMi</a></li>
+    <li class="breadcrumb-item active">Floors</li>
+</ol>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <i class="fa fa-list"></i> Manage Floors
+    </div>
+    <div class="card-body">
+        {% if floors %}
+        Add more floors.
+        {% else %}
+        You don't have any floors listed.
+        {% endif %}
+        <br/>
+        <br/>
+        <button class="btn btn-primary" type="submit"
+                onclick="window.location.href='/floors/new'">
+            Create New
+        </button>
+    </div>
+</div>
+{% if floors %}
+<div class="card mb-3">
+    <div class="card-header">
+        <i class="fa fa-list"></i> Floors List
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table" id="dataTable" width="100%" cellspacing="0">
+                <tbody>
+                {% for floor in floors %}
+                <tr>
+                    <td>
+                        {{ floor.name }}
+                    </td>
+                    <td>
+                        {{ floor.description }}
+                    </td>
+                    <td>
+                        <button class="btn btn-primary btn-block" type="submit"
+                                onclick="window.location.href='/floors/{{ floor.id }}'">
+                            View
+                        </button>
+                    </td>
+                    <td>
+                        <button class="btn btn-secondary btn-block" type="submit"
+                                onclick="window.location.href='/floors/{{ floor.id }}/delete'">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

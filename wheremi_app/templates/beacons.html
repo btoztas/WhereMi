@@ -1,0 +1,68 @@
+{% extends 'blank.html' %}
+
+{% block body %}
+
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">WhereMi</a></li>
+    <li class="breadcrumb-item"><a href="/floors">Floors</a></li>
+    <li class="breadcrumb-item"><a href="/floors/{{ floor.id }}">{{ floor.name }}</a></li>
+    <li class="breadcrumb-item active">Beacons</li>
+</ol>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <i class="fa fa-list"></i> Beacons List
+    </div>
+    <div class="card-body">
+        {% if beacons %}
+        Add more beacons.
+        {% else %}
+        You don't have any beacons listed.
+        {% endif %}
+        <br/>
+        <br/>
+        <button class="btn btn-primary" type="submit"
+                onclick="window.location.href='/floors/{{ floor.id }}/beacons/new'">
+            Create New
+        </button>
+    </div>
+</div>
+
+{% if beacons %}
+<div class="card mb-3">
+    <div class="card-header">
+        <i class="fa fa-list"></i> Beacons List
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table" id="dataTable" width="100%" cellspacing="0">
+                <tbody>
+                {% for beacon in beacons %}
+                <tr>
+                    <td>
+                        {{ beacon.name }}
+                    </td>
+                    <td>
+                        {{ beacon.description }}
+                    </td>
+                    <td>
+                        <button class="btn btn-primary btn-block" type="submit"
+                                onclick="window.location.href='#'">
+                            View
+                        </button>
+                    </td>
+                    <td>
+                        <button class="btn btn-secondary btn-block" type="submit"
+                                onclick="window.location.href='#'">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

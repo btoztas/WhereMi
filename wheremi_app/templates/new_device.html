@@ -1,0 +1,57 @@
+{% extends 'blank.html' %}
+
+{% block body %}
+
+
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">WhereMi</a></li>
+        <li class="breadcrumb-item active"><a href="/devices">Devices</a></li>
+        <li class="breadcrumb-item active">New</li>
+    </ol>
+
+    <div class="card mb-3">
+        <div class="card-header">
+            <i class="fa fa-plus"></i> New Device
+        </div>
+
+        <div class="card-body">
+
+            {% if floors %}
+
+                <form method="post" enctype=multipart/form-data>
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <br>
+                        <input class="form-control" id="name" type="text" name="name" maxlength="50" required/>
+                        <br>
+                        <label for="description">Description</label>
+                        <br>
+                        <input class="form-control" id="description" type="text" name="description" maxlength="150" required/>
+                        <br>
+                        <label for="home_floor_id">Home Floor</label>
+                        <select class="form-control" id="home_floor_id" name="home_floor_id">
+                            {% for floor in floors %}
+                                <option value="{{ floor.id }}">{{ floor.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <br>
+                    </div>
+                    <button class="btn btn-primary btn-block" type="submit">New Device</button>
+                </form>
+
+                {% else %}
+
+                You don't have any floors yet. Please register at least one first.
+
+                <br/>
+                <br/>
+                <button class="btn btn-primary" type="submit"
+                        onclick="window.location.href='/floors/new'">
+                    Create New
+                </button>
+
+            {% endif %}
+        </div>
+
+    </div>
+{% endblock %}
