@@ -21,9 +21,10 @@ def get_location(device):
     for beacon_id, beacon_rssi in result.iteritems():
         mean[beacon_id] = sum(beacon_rssi)/5
         print("Beacon "+beacon_id+" = "+ str(beacon_rssi))
-
-    beacon_id = max(mean.iteritems(), key=operator.itemgetter(1))[0]
-
+    try:
+        beacon_id = max(mean.iteritems(), key=operator.itemgetter(1))[0]
+    except:
+        return None
     return Beacon.query.filter_by(identifier=beacon_id).first()
 
 
