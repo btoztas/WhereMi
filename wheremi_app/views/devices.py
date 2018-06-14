@@ -5,6 +5,8 @@ from flask_user import login_required
 from flask_login import current_user
 from wheremi_app import app, Device, Floor
 from wheremi_app import sql
+from wheremi_app.helpers.location import get_location
+
 
 @app.route("/devices")
 @login_required
@@ -42,7 +44,8 @@ def get_device(device_id):
     device = Device.query.filter_by(user=current_user, id=device_id).first()
     if device != None:
         if current_user == device.user:
-            return render_template('device.html', device=device, username=username)
+            beacon = get_location(device)
+            return render_template('device.html', device=device, username=username, beacon=beacon)
 
     abort(401)
 
@@ -53,11 +56,10 @@ def device_data(device_id):
     if request.method == 'POST':
         device = Device.query.filter_by(id=device_id).first()
         data = request.get_json()
-
         device.save_data(data)
         return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
     if request.method == 'GET':
         device = Device.query.filter_by(id=device_id).first()
-        data = device.retrieve_last(3)
+        data = device.retrieve_all_data()
         return dumps(data), 200, {'ContentType': 'application/json'}

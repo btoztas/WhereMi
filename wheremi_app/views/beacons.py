@@ -35,12 +35,12 @@ def new_beacon(home_floor_id):
 
 @app.route("/floors/<home_floor_id>/beacons/<beacon_id>", methods = ['POST', 'GET'])
 @login_required
-def get_beacon(username_path, home_floor_id, beacon_id):
+def get_beacon(home_floor_id, beacon_id):
     username = current_user.username
 
-    device = Device.query.filter_by(user=current_user, id=beacon_id).first()
-    if device != None:
-        if current_user == device.user:
-            return render_template('beacon.html', device=device, username=username)
+    beacon = Beacon.query.filter_by(id=beacon_id).first()
+    if beacon != None:
+        if current_user == beacon.user:
+            return render_template('beacon.html', beacon=beacon, username=username)
 
     abort(401)

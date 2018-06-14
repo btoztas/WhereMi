@@ -38,8 +38,9 @@ class Device(db.Model):
         documents = collection.find({}, {'_id': False})
         return documents
 
+    # returns a dict with the corresponding data
     def retrieve_last(self, size):
         collection = mongo.db[str(self.id)]
-        documents = collection.find().skip(collection.count() - size)
+        documents = collection.find({}, {'_id': False}).skip(collection.count() - size)
         return documents
 
