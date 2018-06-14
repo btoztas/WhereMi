@@ -14,7 +14,7 @@ def get_location(device):
                 else:
                     result[beacon['id']] = list()
                     result[beacon['id']].append(beacon['rssi'])
-    except KeyError:
+    except:
         return None
 
     mean = dict()
