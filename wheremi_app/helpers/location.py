@@ -24,6 +24,6 @@ def get_location(device):
 
     beacon_id = max(mean.iteritems(), key=operator.itemgetter(1))[0]
 
-    return Beacon.query.filter_by(id=beacon_id).first()
+    return Beacon.query.filter_by(identifier=beacon_id).first()
 
 
