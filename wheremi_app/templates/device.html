@@ -85,6 +85,11 @@
                 </td>
             </tr>
             <tr>
+                <td>
+                    <b>Floor info:</b> {{ beacon.home_floor.description}}
+                </td>
+            </tr>
+            <tr>
                 <td valign="center" align="center">
                     <img src="{{ url_for( 'static', filename='files/%s' % [username, '/', device.id, '/', device.name]|join ) }}"
                          alt="Floor Plant" width="80%">
