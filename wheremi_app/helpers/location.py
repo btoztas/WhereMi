@@ -23,8 +23,9 @@ def get_location(device):
         print("Beacon "+beacon_id+" = "+ str(beacon_rssi))
     try:
         beacon_id = max(mean.iteritems(), key=operator.itemgetter(1))[0]
-    except:
+    except ValueError:
         return None
+    
     return Beacon.query.filter_by(identifier=beacon_id).first()
 
 
