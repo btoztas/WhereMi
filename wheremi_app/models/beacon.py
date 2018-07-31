@@ -3,7 +3,7 @@ from datetime import datetime
 
 class Beacon(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    identifier = db.Column(db.String(50), nullable=False)
+    identifier = db.Column(db.String(50), nullable=False, unique=True)
     name = db.Column(db.String(50), nullable=False)
     home_floor_id = db.Column(db.Integer, db.ForeignKey('floor.id'), nullable=False)
     description = db.Column(db.String(150), nullable=False)

@@ -9,7 +9,7 @@ from wheremi_app import sql as db
 def list_beacons(home_floor_id):
     username = current_user.username
     home_floor = Floor.query.filter_by(user=current_user, id=home_floor_id).first()
-    beacons = Beacon.query.filter_by(home_floor=home_floor).all()
+    beacons = Beacon.query.filter_by(home_floor=home_floor).order_by(Beacon.identifier).all()
     return render_template('beacons.html', username=username, beacons=beacons, floor=home_floor)
 
 
