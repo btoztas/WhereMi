@@ -60,28 +60,63 @@
     </div>
 </div>
 
+<div class="card mb-3">
+    <div class="card-header">
+        <i class="fa fa-info-circle"></i> {{ device.name }} - Status
+    </div>
+    <div class="card-body">
+        {% if status %}
+            <table class="table" id="infoTable" width="100%" cellspacing="0">
+                <tbody>
+                <tr>
+                    <td>
+                        <b>Last status message:</b> {{ status.timestamp | format_unix_time}}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <b>Battery:</b> {{ status.info.battery }}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <b>Temperature:</b> {{ status.info.temperature }}
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        {% else %}
+        There are no recent info acknowledgements.
+        {% endif %}
+    </div>
+</div>
+
 
 <div class="card mb-3">
     <div class="card-header">
-        <i class="fa fa-info-circle"></i> {{ device.name }} - Acknowledgements
+        <i class="fa fa-info-circle"></i> {{ device.name }} - Location History
     </div>
     <div class="card-body">
-        {% if beacon %}
-        <table class="table" id="ackTable" width="100%" cellspacing="0">
+        {% if location %}
+        <table class="table" id="locationTable" width="100%" cellspacing="0">
             <tbody>
             <tr>
                 <td>
-                    <b>Last seen by:</b> {{ beacon.identifier }} - {{ beacon.name }} - {{ beacon.description }}
+                    <b>Location Algorithm:</b> {{ location.type }}
+                </td>
+            <tr>
+                <td>
+                    <b>Last seen by:</b> {{ location.beacon.identifier }} - {{ location.beacon.name }} - {{ location.beacon.description }}
                 </td>
             </tr>
             <tr>
                 <td>
-                    <b>Timestamp at:</b> {{ device.created_at }}
+                    <b>Timestamp at:</b> {{ location.timestamp | format_unix_time }}
                 </td>
             </tr>
             <tr>
                 <td>
-                    <b>Floor:</b> {{ beacon.home_floor.name}}
+                    <b>Floor:</b> {{ location.beacon.home_floor.name}}
                 </td>
             </tr>
             <tr>
@@ -93,9 +128,33 @@
             </tbody>
         </table>
         {% else %}
-        There are no recent acknowledgements.
+        There are no recent location acknowledgements.
         {% endif %}
     </div>
 </div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <i class="fa fa-info-circle"></i> {{ device.name }} - Movement History
+    </div>
+    <div class="card-body">
+        {% if movements %}
+        <table class="table" id="movementTable" width="100%" cellspacing="0">
+            <tbody>
+            {% for movement in movements %}
+                <tr>
+                    <td>
+                        <b>Timestamp:</b> {{ movement.timestamp | format_unix_time }}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        There are no recent movement acknowledgements.
+        {% endif %}
+    </div>
+</div>
+
 
 {% endblock %}

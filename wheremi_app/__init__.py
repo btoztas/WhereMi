@@ -40,3 +40,5 @@ admin.add_view(ModelView(User, sql.session))
 admin.add_view(ModelView(Beacon, sql.session))
 admin.add_view(ModelView(Device, sql.session))
 admin.add_view(ModelView(Floor, sql.session))
+
+from helpers import jinja2

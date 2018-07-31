@@ -3,9 +3,10 @@ from bson.json_util import dumps
 from flask import render_template, request, redirect, url_for, abort
 from flask_user import login_required
 from flask_login import current_user
-from wheremi_app import app, Device, Floor
+from wheremi_app import app, Device, Floor, Beacon
 from wheremi_app import sql
-from wheremi_app.helpers.location import get_location
+from wheremi_app.helpers.location import get_location_based_on_last_scans, decode_location_timestamp, \
+    decode_accelerometer_event_timestamp, get_last_location, save_message
 
 
 @app.route("/devices")
@@ -44,8 +45,11 @@ def get_device(device_id):
     device = Device.query.filter_by(user=current_user, id=device_id).first()
     if device != None:
         if current_user == device.user:
-            beacon = get_location(device)
-            return render_template('device.html', device=device, username=username, beacon=beacon)
+            location = get_last_location(device)
+            movements= device.retrieve_all_accelerometer_events()
+            status = device.retrieve_last_status()
+            return render_template('device.html',
+                                   device=device, username=username, location=location, movements=movements, status=status)
 
     abort(401)
 
@@ -56,10 +60,50 @@ def device_data(device_id):
     if request.method == 'POST':
         device = Device.query.filter_by(id=device_id).first()
         data = request.get_json()
-        device.save_data(data)
+        save_message(device, data)
+
         return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
     if request.method == 'GET':
         device = Device.query.filter_by(id=device_id).first()
-        data = device.retrieve_all_data()
+        data = device.retrieve_all_messages()
         return dumps(data), 200, {'ContentType': 'application/json'}
+
+
+@app.route("/api/devices/<device_id>/locations")
+def device_location_data(device_id):
+    device = Device.query.filter_by(id=device_id).first()
+    data = device.retrieve_all_locations()
+    return dumps(data), 200, {'ContentType': 'application/json'}
+
+
+@app.route("/api/devices/<device_id>/status")
+def device_status_data(device_id):
+    device = Device.query.filter_by(id=device_id).first()
+    data = device.retrieve_all_status()
+    return dumps(data), 200, {'ContentType': 'application/json'}
+
+
+@app.route("/api/devices/<device_id>/accelerometer_events")
+def device_accelerometer_data(device_id):
+    device = Device.query.filter_by(id=device_id).first()
+    data = device.retrieve_all_accelerometer_events()
+    return dumps(data), 200, {'ContentType': 'application/json'}
+
+
+@app.route("/api/devices/messages", methods = ['POST', 'GET'])
+def device_save_message():
+    if request.method == 'POST':
+        data = request.get_json()
+        device = Device.query.filter_by(name=data['device']).first()
+        if device == None:
+            abort(404)
+        save_message(device, data)
+        return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+
+    if request.method == 'GET':
+        devices = Device.query.all()
+        response = dict()
+        for device in devices:
+            response[device.name] = device.retrieve_all_messages()
+        return dumps(response), 200, {'ContentType': 'application/json'}
