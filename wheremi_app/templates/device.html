@@ -104,21 +104,29 @@
                 <td>
                     <b>Location Algorithm:</b> {{ location.type }}
                 </td>
+
             <tr>
                 <td>
+                    {% if location.beacon %}
                     <b>Last seen by:</b> {{ location.beacon.identifier }} - {{ location.beacon.name }} - {{ location.beacon.description }}
+                    {% else %}
+                    <b>Last seen by: Unknown</b>
+                    {% endif %}
                 </td>
             </tr>
+
             <tr>
                 <td>
                     <b>Timestamp at:</b> {{ location.timestamp | format_unix_time }}
                 </td>
             </tr>
+            {% if location.beacon %}
             <tr>
                 <td>
                     <b>Floor:</b> {{ location.beacon.home_floor.name}}
                 </td>
             </tr>
+            {% endif %}
             <tr>
                 <td valign="center" align="center">
                     <img src="{{ url_for( 'static', filename='files/%s' % [username, '/', device.id, '/', device.name]|join ) }}"
