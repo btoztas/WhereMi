@@ -1,11 +1,38 @@
 import operator
-from datetime import datetime
-
 from wheremi_app import Beacon
 
-SEND_PERIODICITY = 600
-LOCATION_TIME_INTERVALS = 16
-ACC_TIME_INTERVALS = 12
+
+# CONFIGS
+CONFIG_PRECISION_SEND_TIMER        = 7200
+CONFIG_PROXIMITY_SEND_TIMER        = 900
+CONFIG_MOVEMENT_START_TIMER        = 30
+CONFIG_MOVEMENT_INQUIRY_TIMER      = 30
+CONFIG_MOVEMENT_STOP_TIMER         = 900
+CONFIG_NUMBER_ACC_WAKEUPS_CRITERIA = 5
+CONFIG_TIME_ACC_WAKEUPS_CRITERIA   = 15
+CONFIG_ACC_TIME_NUM_BIT            = 12
+CONFIG_BEACON_TIME_RESOLUTION      = 16
+
+# STATES
+STATE_TURNED_ON               = 0
+STATE_STARTED_MOVING          = 1
+STATE_MOVING                  = 2
+STATE_STOPPED_MOVING          = 3
+STATE_RESTING                 = 4
+
+# MESSAGE TYPES
+MESSAGE_TURNED_ON          = 0
+MESSAGE_PERIODIC_LOCATION  = 1
+MESSAGE_PROXIMITY_LOCATION = 2
+MESSAGE_STARTED_MOVING	   = 3
+MESSAGE_STOPED_MOVING 	   = 4
+MESSAGE_MOVING             = 5
+
+# LOCATION TYPES
+LOCATION_TYPE_PRECISION = 0
+LOCATION_TYPE_PROXIMITY = 1
+LOCATION_TYPE_UNKNOWN   = 3
+
 
 def get_location_based_on_last_scans(device, num_scans):
     data = device.retrieve_last(num_scans)
@@ -33,15 +60,15 @@ def get_location_based_on_last_scans(device, num_scans):
     return Beacon.query.filter_by(identifier=beacon_id).first()
 
 
-def decode_location_timestamp(send_timestamp, relative_timestamp):
+def decode_proximity_location_timestamp(send_timestamp, relative_timestamp):
 
-    time_interval = SEND_PERIODICITY/LOCATION_TIME_INTERVALS
+    time_interval = CONFIG_PROXIMITY_SEND_TIMER/CONFIG_BEACON_TIME_RESOLUTION
     return send_timestamp - time_interval * relative_timestamp + time_interval/2
 
 
 def decode_accelerometer_event_timestamp(send_timestamp, relative_timestamp):
 
-    time_interval = SEND_PERIODICITY/ACC_TIME_INTERVALS
+    time_interval = CONFIG_PROXIMITY_SEND_TIMER/CONFIG_ACC_TIME_NUM_BIT
     return send_timestamp - (12-relative_timestamp)*time_interval + time_interval/2
 
 
@@ -61,24 +88,112 @@ def get_last_location(device):
             'timestamp': last_location_info['location']['timestamp']
         }
 
+
+def get_precision_location_from_payload(payload):
+
+    return { 'type': LOCATION_TYPE_UNKNOWN } if payload['num_beacons'] == 0 else \
+        { 'type': LOCATION_TYPE_PRECISION, 'num_beacons': payload['num_beacons'], 'beacons': payload['beacons'] }
+
+def get_proximity_locations_from_payload(payload, timestamp):
+
+    locations = list()
+
+    for beacon in payload['beacons']:
+
+        if beacon['id'] != 65535:
+            locations.append(
+                {
+                    'timestamp': decode_proximity_location_timestamp(timestamp, beacon['diff_time']),
+                    'location': { 'type': LOCATION_TYPE_UNKNOWN }
+                }
+            )
+            locations.append(
+                {
+                    'location': {' type': LOCATION_TYPE_PROXIMITY, 'id': beacon['id'] },
+                    'timestamp': decode_proximity_location_timestamp(timestamp, beacon['diff_time']),
+                }
+            )
+
+        else:
+            pass
+
+    return locations
+
+
+def get_battery_from_payload(payload):
+    return payload['vbat']
+
+
+def get_temperature_from_payload(payload):
+    return payload['temperature']
+
+
+def get_accelerometer_events_from_payload(payload, timestamp):
+    binary_acc_history = bin(payload['acc_history'])
+    acc_events = list()
+    for i, x in enumerate(binary_acc_history[2:]):
+        if int(x) == 1:
+            acc_events.append(decode_accelerometer_event_timestamp(timestamp, i))
+    return acc_events
+
 def save_message(device, data):
 
-    send_timestamp = data['timestamp']
+    timestamp = data['timestamp']
+    message_type = data['header']
+    payload = data['payload']
 
-    # saving message
+    # Saving Message
     device.save_message(data)
 
-    if data['header'] == 0:
-        device.save_device_info(send_timestamp, data['payload']['battery'], data['payload']['temperature'])
 
-    elif data['header'] <= 4:
+    if message_type == MESSAGE_TURNED_ON or\
+            message_type == MESSAGE_PERIODIC_LOCATION or\
+            message_type == MESSAGE_STOPED_MOVING:
 
-        # saving location data
-        for beacon in data['payload']['beacons']:
-            device.save_proximity_location(beacon['id'], decode_location_timestamp(send_timestamp, beacon['diff_time']))
+        if (message_type == MESSAGE_TURNED_ON):
+            device.save_status(timestamp, STATE_TURNED_ON)
 
-        binary_acc_history = bin(data['payload']['acc_history'])
-        for i, x in enumerate(binary_acc_history[2:]):
-            if int(x) == 1:
-                # we have an acc event
-                device.save_accelerometer_event_location(decode_accelerometer_event_timestamp(send_timestamp, i))
+        if (message_type == MESSAGE_PERIODIC_LOCATION):
+            device.save_status(timestamp, STATE_MOVING)
+
+        if (message_type == MESSAGE_STOPED_MOVING):
+            device.save_status(timestamp, STATE_RESTING)
+
+        type, location = get_precision_location_from_payload(payload)
+        device.save_location(timestamp, location)
+
+        temperature = get_temperature_from_payload(payload)
+        device.save_temperature(timestamp, temperature)
+
+        battery = get_battery_from_payload(payload)
+        device.save_battery(timestamp, battery)
+
+
+    elif message_type == MESSAGE_STARTED_MOVING:
+
+        device.save_status(timestamp, STATE_STARTED_MOVING)
+
+
+    elif message_type == MESSAGE_MOVING:
+
+        device.save_status(timestamp, STATE_MOVING)
+
+        location = get_precision_location_from_payload(payload)
+        device.save_location(LOCATION_TYPE_PRECISION, timestamp, location)
+
+        accelerometer_events = get_accelerometer_events_from_payload(payload, timestamp)
+        for event in accelerometer_events:
+            device.save_accelerometer_event(event)
+
+
+    elif message_type == MESSAGE_PROXIMITY_LOCATION:
+
+        device.save_status(timestamp, STATE_RESTING)
+
+        accelerometer_events = get_accelerometer_events_from_payload(payload, timestamp)
+        for event in accelerometer_events:
+            device.save_accelerometer_event(event)
+
+        locations = get_proximity_locations_from_payload(payload, timestamp)
+        for entry in locations:
+                device.save_location(entry['timestamp'], entry['location'])

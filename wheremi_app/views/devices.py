@@ -5,8 +5,7 @@ from flask_user import login_required
 from flask_login import current_user
 from wheremi_app import app, Device, Floor, Beacon
 from wheremi_app import sql
-from wheremi_app.helpers.location import get_location_based_on_last_scans, decode_location_timestamp, \
-    decode_accelerometer_event_timestamp, get_last_location, save_message
+from wheremi_app.helpers.location import get_last_location, save_message
 
 
 @app.route("/devices")
