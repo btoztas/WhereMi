@@ -73,45 +73,46 @@ def decode_accelerometer_event_timestamp(send_timestamp, relative_timestamp):
 def get_last_location(device):
 
     data = device.retrieve_last_location()
-    timestamp = data['timestamp']
-    location = data['location']
+    if data:
+        timestamp = data['timestamp']
+        location = data['location']
 
-    if location['type'] == LOCATION_TYPE_UNKNOWN:
-        return None
-
-    if location['type'] == LOCATION_TYPE_PROXIMITY:
-
-        try:
-            beacon_id = location['id']
-            beacon = Beacon.query.filter_by(identifier=beacon_id).first()
-        except:
-            return None
-        return {
-            'type': 'proximity',
-            'beacon': beacon,
-            'timestamp': timestamp
-        }
-
-    if location['type'] == LOCATION_TYPE_PRECISION:
-
-        max = -100
-        id = 0
-
-        for beacon in location['beacons']:
-            if max < beacon['rssi']:
-                id = beacon['id']
-        try:
-            beacon_id = id
-            beacon = Beacon.query.filter_by(identifier=beacon_id).first()
-
-        except:
+        if location['type'] == LOCATION_TYPE_UNKNOWN:
             return None
 
-        return {
-            'type': 'proximity',
-            'beacon': beacon,
-            'timestamp': timestamp
-        }
+        if location['type'] == LOCATION_TYPE_PROXIMITY:
+
+            try:
+                beacon_id = location['id']
+                beacon = Beacon.query.filter_by(identifier=beacon_id).first()
+            except:
+                return None
+            return {
+                'type': 'proximity',
+                'beacon': beacon,
+                'timestamp': timestamp
+            }
+
+        if location['type'] == LOCATION_TYPE_PRECISION:
+
+            max = -100
+            id = 0
+
+            for beacon in location['beacons']:
+                if max < beacon['rssi']:
+                    id = beacon['id']
+            try:
+                beacon_id = id
+                beacon = Beacon.query.filter_by(identifier=beacon_id).first()
+
+            except:
+                return None
+
+            return {
+                'type': 'proximity',
+                'beacon': beacon,
+                'timestamp': timestamp
+            }
 
 
 def get_precision_location_from_payload(payload):
