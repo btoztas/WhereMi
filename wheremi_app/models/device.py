@@ -15,6 +15,7 @@ class Device(db.Model):
     message_collection_name = db.Column(db.String(50), nullable=False)
     location_collection_name = db.Column(db.String(50), nullable=False)
     accelerometer_event_collection_name = db.Column(db.String(50), nullable=False)
+    status_collection_name = db.Column(db.String(50), nullable=False)
     battery_collection_name = db.Column(db.String(50), nullable=False)
     temperature_collection_name = db.Column(db.String(50), nullable=False)
 
@@ -113,7 +114,7 @@ class Device(db.Model):
         documents = collection.find({}, {'_id': False}).sort([('timestamp', -1)])
         return documents
 
-    def retrieve_last_beacon_location(self):
+    def retrieve_last_location(self):
         collection = mongo.db[self.location_collection_name]
         try:
             documents = collection.find({}, {'_id': False}).sort([('timestamp', -1)]).limit(1)[0]

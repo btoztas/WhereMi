@@ -1,6 +1,5 @@
 import operator
-from wheremi_app import Beacon
-
+from wheremi_app import Beacon, app
 
 # CONFIGS
 CONFIG_PRECISION_SEND_TIMER        = 7200
@@ -17,15 +16,14 @@ CONFIG_BEACON_TIME_RESOLUTION      = 16
 STATE_TURNED_ON               = 0
 STATE_STARTED_MOVING          = 1
 STATE_MOVING                  = 2
-STATE_STOPPED_MOVING          = 3
-STATE_RESTING                 = 4
+STATE_RESTING                 = 3
 
 # MESSAGE TYPES
 MESSAGE_TURNED_ON          = 0
 MESSAGE_PERIODIC_LOCATION  = 1
 MESSAGE_PROXIMITY_LOCATION = 2
 MESSAGE_STARTED_MOVING	   = 3
-MESSAGE_STOPED_MOVING 	   = 4
+MESSAGE_STOPPED_MOVING 	   = 4
 MESSAGE_MOVING             = 5
 
 # LOCATION TYPES
@@ -74,18 +72,45 @@ def decode_accelerometer_event_timestamp(send_timestamp, relative_timestamp):
 
 def get_last_location(device):
 
-    if device.location_mode == "proximity":
-        last_location_info = device.retrieve_last_beacon_location()
+    data = device.retrieve_last_location()
+    timestamp = data['timestamp']
+    location = data['location']
+
+    if location['type'] == LOCATION_TYPE_UNKNOWN:
+        return None
+
+    if location['type'] == LOCATION_TYPE_PROXIMITY:
+
         try:
-            beacon_id = last_location_info['location']['id']
+            beacon_id = location['id']
             beacon = Beacon.query.filter_by(identifier=beacon_id).first()
+        except:
+            return None
+        return {
+            'type': 'proximity',
+            'beacon': beacon,
+            'timestamp': timestamp
+        }
+
+    if location['type'] == LOCATION_TYPE_PRECISION:
+
+        max = -100
+        id = 0
+
+        for beacon in location['beacons']:
+            if max < beacon['rssi']:
+                id = beacon['id']
+        try:
+            beacon_id = id
+            beacon = Beacon.query.filter_by(identifier=beacon_id).first()
+
         except:
             return None
 
         return {
             'type': 'proximity',
             'beacon': beacon,
-            'timestamp': last_location_info['location']['timestamp']
+            'timestamp': timestamp
         }
 
 
@@ -100,22 +125,20 @@ def get_proximity_locations_from_payload(payload, timestamp):
 
     for beacon in payload['beacons']:
 
-        if beacon['id'] != 65535:
+        if beacon['id'] == 65535:
             locations.append(
                 {
                     'timestamp': decode_proximity_location_timestamp(timestamp, beacon['diff_time']),
                     'location': { 'type': LOCATION_TYPE_UNKNOWN }
                 }
             )
+        else:
             locations.append(
                 {
-                    'location': {' type': LOCATION_TYPE_PROXIMITY, 'id': beacon['id'] },
+                    'location': { 'type': LOCATION_TYPE_PROXIMITY, 'id': beacon['id'] },
                     'timestamp': decode_proximity_location_timestamp(timestamp, beacon['diff_time']),
                 }
             )
-
-        else:
-            pass
 
     return locations
 
@@ -125,7 +148,7 @@ def get_battery_from_payload(payload):
 
 
 def get_temperature_from_payload(payload):
-    return payload['temperature']
+    return payload['temp']
 
 
 def get_accelerometer_events_from_payload(payload, timestamp):
@@ -140,7 +163,7 @@ def save_message(device, data):
 
     timestamp = data['timestamp']
     message_type = data['header']
-    payload = data['payload']
+    if 'payload' in data: payload = data['payload']
 
     # Saving Message
     device.save_message(data)
@@ -148,18 +171,18 @@ def save_message(device, data):
 
     if message_type == MESSAGE_TURNED_ON or\
             message_type == MESSAGE_PERIODIC_LOCATION or\
-            message_type == MESSAGE_STOPED_MOVING:
+            message_type == MESSAGE_STOPPED_MOVING:
 
         if (message_type == MESSAGE_TURNED_ON):
             device.save_status(timestamp, STATE_TURNED_ON)
 
         if (message_type == MESSAGE_PERIODIC_LOCATION):
-            device.save_status(timestamp, STATE_MOVING)
-
-        if (message_type == MESSAGE_STOPED_MOVING):
             device.save_status(timestamp, STATE_RESTING)
 
-        type, location = get_precision_location_from_payload(payload)
+        if (message_type == MESSAGE_STOPPED_MOVING):
+            device.save_status(timestamp, STATE_RESTING)
+
+        location = get_precision_location_from_payload(payload)
         device.save_location(timestamp, location)
 
         temperature = get_temperature_from_payload(payload)
@@ -188,7 +211,7 @@ def save_message(device, data):
 
     elif message_type == MESSAGE_PROXIMITY_LOCATION:
 
-        device.save_status(timestamp, STATE_RESTING)
+        device.save_status(timestamp, STATE_MOVING)
 
         accelerometer_events = get_accelerometer_events_from_payload(payload, timestamp)
         for event in accelerometer_events:
@@ -197,3 +220,36 @@ def save_message(device, data):
         locations = get_proximity_locations_from_payload(payload, timestamp)
         for entry in locations:
                 device.save_location(entry['timestamp'], entry['location'])
+
+
+def find_location(data):
+
+    type = data['location']['type']
+
+    # CASE UNKNOWN
+    if type == LOCATION_TYPE_UNKNOWN:
+        return
+
+    # CASE PROXIMITY
+
+    # CASE PRECISION
+
+
+
+@app.template_filter('decode_status')
+def decode_status(status):
+
+    if status == STATE_TURNED_ON:
+        return 'Turned on'
+
+    elif status == STATE_STARTED_MOVING:
+        return 'Started Moving'
+
+    elif status == STATE_MOVING:
+        return 'Moving'
+
+    elif status == STATE_RESTING:
+        return 'Resting'
+
+
+
