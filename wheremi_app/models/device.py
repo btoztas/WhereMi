@@ -104,13 +104,13 @@ class Device(db.Model):
 
     def retrieve_all_status(self):
         collection = mongo.db[self.info_collection_name]
-        documents = collection.find({}, {'_id': False}).sort([('location.timestamp', -1)])
+        documents = collection.find({}, {'_id': False}).sort([('timestamp', -1)])
         return documents
 
     def retrieve_last_status(self):
         collection = mongo.db[self.info_collection_name]
         try:
-            documents = collection.find({}, {'_id': False}).sort([('location.timestamp', -1)]).limit(1)[0]
+            documents = collection.find({}, {'_id': False}).sort([('timestamp', -1)]).limit(1)[0]
         except:
             return None
         return documents
