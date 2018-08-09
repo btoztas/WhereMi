@@ -15,7 +15,9 @@ class Device(db.Model):
     message_collection_name = db.Column(db.String(50), nullable=False)
     location_collection_name = db.Column(db.String(50), nullable=False)
     accelerometer_event_collection_name = db.Column(db.String(50), nullable=False)
-    info_collection_name = db.Column(db.String(50), nullable=False)
+    status_collection_name = db.Column(db.String(50), nullable=False)
+    battery_collection_name = db.Column(db.String(50), nullable=False)
+    temperature_collection_name = db.Column(db.String(50), nullable=False)
 
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
@@ -29,9 +31,11 @@ class Device(db.Model):
         self.description = description
         self.home_floor_id = home_floor_id
         self.location_mode = "proximity"
-        self.info_collection_name = self.create_device_info_collection_name(user_id, name)
+        self.battery_collection_name = self.create_battery_collection_name(user_id, name)
+        self.temperature_collection_name = self.create_temperature_collection_name(user_id, name)
         self.message_collection_name = self.create_message_collection_name(user_id, name)
         self.location_collection_name = self.create_location_collection_name(user_id, name)
+        self.status_collection_name = self.create_status_collection_name(user_id, name)
         self.accelerometer_event_collection_name = self.create_accelerometer_event_collection_name(user_id, name)
 
     def __str__(self):
@@ -47,8 +51,14 @@ class Device(db.Model):
     def create_accelerometer_event_collection_name(self, user_id, name):
         return "accelerometers_" + str(user_id) + "_" + name
 
-    def create_device_info_collection_name(self, user_id, name):
-        return "device_info_" + str(user_id) + "_" + name
+    def create_temperature_collection_name(self, user_id, name):
+        return "temperature" + str(user_id) + "_" + name
+
+    def create_battery_collection_name(self, user_id, name):
+        return "battery" + str(user_id) + "_" + name
+
+    def create_status_collection_name(self, user_id, name):
+        return "status" + str(user_id) + "_" + name
 
     # data must be a dict
     def save_message(self, data):
@@ -58,25 +68,40 @@ class Device(db.Model):
         collection = mongo.db[self.message_collection_name]
         collection.insert(document)
 
-    def save_proximity_location(self, id, timestamp):
+    def save_location(self, timestamp, location):
         document = dict()
-        document['location_type'] = 'proximity'
-        document['location'] = {'id': id, 'timestamp':timestamp}
+        document['timestamp'] = timestamp
+        document['location'] = location
         collection = mongo.db[self.location_collection_name]
         collection.insert(document)
 
-    def save_accelerometer_event_location(self, timestamp):
+    def save_accelerometer_event(self, timestamp):
         document = dict()
         document['timestamp'] = timestamp
         collection = mongo.db[self.accelerometer_event_collection_name]
         collection.insert(document)
 
-    def save_device_info(self, timestamp, battery, temperature):
+    def save_battery(self, timestamp, battery):
         document = dict()
         document['timestamp'] = timestamp
-        document['info'] = {'battery': battery, 'temperature': temperature}
-        collection = mongo.db[self.info_collection_name]
+        document['battery'] = battery
+        collection = mongo.db[self.battery_collection_name]
         collection.insert(document)
+
+    def save_temperature(self, timestamp, temperature):
+        document = dict()
+        document['timestamp'] = timestamp
+        document['temperature'] = temperature
+        collection = mongo.db[self.temperature_collection_name]
+        collection.insert(document)
+
+    def save_status(self, timestamp, status):
+        document = dict()
+        document['timestamp'] = timestamp
+        document['status'] = status
+        collection = mongo.db[self.status_collection_name]
+        collection.insert(document)
+
 
     # returns a dict with the corresponding data
     def retrieve_all_messages(self):
@@ -86,13 +111,13 @@ class Device(db.Model):
 
     def retrieve_all_locations(self):
         collection = mongo.db[self.location_collection_name]
-        documents = collection.find({}, {'_id': False}).sort([('location.timestamp', -1)])
+        documents = collection.find({}, {'_id': False}).sort([('timestamp', -1)])
         return documents
 
-    def retrieve_last_beacon_location(self):
+    def retrieve_last_location(self):
         collection = mongo.db[self.location_collection_name]
         try:
-            documents = collection.find({}, {'_id': False}).sort([('location.timestamp', -1)]).limit(1)[0]
+            documents = collection.find({}, {'_id': False}).sort([('timestamp', -1)]).limit(1)[0]
         except:
             return None
         return documents
@@ -102,15 +127,42 @@ class Device(db.Model):
         documents = collection.find({}, {'_id': False}).sort([('timestamp', -1)])
         return documents
 
-    def retrieve_all_status(self):
-        collection = mongo.db[self.info_collection_name]
+    def retrieve_all_temperature(self):
+        collection = mongo.db[self.temperature_collection_name]
         documents = collection.find({}, {'_id': False}).sort([('timestamp', -1)])
         return documents
 
-    def retrieve_last_status(self):
-        collection = mongo.db[self.info_collection_name]
+    def retrieve_last_temperature(self):
+        collection = mongo.db[self.temperature_collection_name]
         try:
             documents = collection.find({}, {'_id': False}).sort([('timestamp', -1)]).limit(1)[0]
         except:
             return None
         return documents
+
+    def retrieve_all_battery(self):
+        collection = mongo.db[self.battery_collection_name]
+        documents = collection.find({}, {'_id': False}).sort([('timestamp', -1)])
+        return documents
+
+    def retrieve_last_battery(self):
+        collection = mongo.db[self.battery_collection_name]
+        try:
+            documents = collection.find({}, {'_id': False}).sort([('timestamp', -1)]).limit(1)[0]
+        except:
+            return None
+        return documents
+
+    def retrieve_all_status(self):
+        collection = mongo.db[self.status_collection_name]
+        documents = collection.find({}, {'_id': False}).sort([('timestamp', -1)])
+        return documents
+
+    def retrieve_last_status(self):
+        collection = mongo.db[self.status_collection_name]
+        try:
+            documents = collection.find({}, {'_id': False}).sort([('timestamp', -1)]).limit(1)[0]
+        except:
+            return None
+        return documents
+

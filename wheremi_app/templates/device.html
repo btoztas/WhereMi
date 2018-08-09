@@ -23,6 +23,7 @@
     </div>
 </div>
 
+
 <div class="card mb-3">
     <div class="card-header">
         <i class="fa fa-info-circle"></i> {{ device.name }} - Info
@@ -32,7 +33,7 @@
             <tbody>
             <tr>
                 <td>
-                    <b>Device Channel:</b> /api/devices/{{ device.id }}
+                    <b>Device Channel:</b> /api/devices/{{ device.id }}/messages
                 </td>
             </tr>
             <tr>
@@ -52,42 +53,11 @@
             </tr>
             <tr>
                 <td>
-                    <b>Created at:</b> {{ device.created_at }}
+                    <b>Created at:</b> {{ device.created_at | format_time_from_time_object }}
                 </td>
             </tr>
             </tbody>
         </table>
-    </div>
-</div>
-
-<div class="card mb-3">
-    <div class="card-header">
-        <i class="fa fa-info-circle"></i> {{ device.name }} - Status
-    </div>
-    <div class="card-body">
-        {% if status %}
-            <table class="table" id="infoTable" width="100%" cellspacing="0">
-                <tbody>
-                <tr>
-                    <td>
-                        <b>Last status message:</b> {{ status.timestamp | format_unix_time}}
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <b>Battery:</b> {{ status.info.battery }}
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <b>Temperature:</b> {{ status.info.temperature }}
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        {% else %}
-        There are no recent info acknowledgements.
-        {% endif %}
     </div>
 </div>
 
@@ -104,7 +74,6 @@
                 <td>
                     <b>Location Algorithm:</b> {{ location.type }}
                 </td>
-
             <tr>
                 <td>
                     {% if location.beacon %}
@@ -143,6 +112,34 @@
 
 <div class="card mb-3">
     <div class="card-header">
+        <i class="fa fa-info-circle"></i> {{ device.name }} - Status
+    </div>
+    <div class="card-body">
+        {% if status %}
+            <table class="table" id="infoTable" width="100%" cellspacing="0">
+                <tbody>
+                <tr>
+                    <td>
+                        <b>Info:</b> {{ status.status | decode_status }}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <b>Last status message:</b> {{ status.timestamp | format_unix_time}}
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+            <div id="statusChart" style="min-width: 310px; height: 150px; margin: 0 auto"></div>
+        {% else %}
+        There are no recent info acknowledgements.
+        {% endif %}
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
         <i class="fa fa-info-circle"></i> {{ device.name }} - Movement History
     </div>
     <div class="card-body">
@@ -158,11 +155,83 @@
             {% endfor %}
             </tbody>
         </table>
+        <div id="movementChart" style="min-width: 310px; height: 250px; margin: 0 auto"></div>
         {% else %}
         There are no recent movement acknowledgements.
         {% endif %}
     </div>
 </div>
 
+
+<div class="card mb-3">
+    <div class="card-header">
+        <i class="fa fa-info-circle"></i> {{ device.name }} - Temperature
+    </div>
+    <div class="card-body">
+        {% if temperature %}
+            <table class="table" id="infoTable" width="100%" cellspacing="0">
+                <tbody>
+                <tr>
+                    <td>
+                        <b>Temperature:</b> {{ temperature.temperature }}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <b>Timestamp:</b> {{ temperature.timestamp | format_unix_time}}
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+
+            <div id="temperatureChart" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+
+
+        {% else %}
+        There are no recent info acknowledgements.
+        {% endif %}
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <i class="fa fa-info-circle"></i> {{ device.name }} - Battery
+    </div>
+    <div class="card-body">
+        {% if battery %}
+            <table class="table" id="infoTable" width="100%" cellspacing="0">
+                <tbody>
+                <tr>
+                    <td>
+                        <b>Battery:</b> {{ battery.battery }}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <b>Timestamp:</b> {{ battery.timestamp | format_unix_time}}
+                    </td>
+                </tr>
+
+                </tbody>
+            </table>
+
+            <div id="batteryChart" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+
+        {% else %}
+        There are no recent info acknowledgements.
+        {% endif %}
+    </div>
+</div>
+
+
+{% endblock %}
+
+
+{% block scripts %}
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/series-label.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="{{ url_for('static', filename='js/device.js') }}"></script>
 
 {% endblock %}

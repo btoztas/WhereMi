@@ -5,9 +5,8 @@ from flask_user import login_required
 from flask_login import current_user
 from wheremi_app import app, Device, Floor, Beacon
 from wheremi_app import sql
-from wheremi_app.helpers.location import get_location_based_on_last_scans, decode_location_timestamp, \
-    decode_accelerometer_event_timestamp, get_last_location, save_message
-
+from wheremi_app.helpers.location import get_last_location, save_message
+import time
 
 @app.route("/devices")
 @login_required
@@ -48,14 +47,35 @@ def get_device(device_id):
             location = get_last_location(device)
             movements= device.retrieve_all_accelerometer_events()
             status = device.retrieve_last_status()
-            return render_template('device.html',
-                                   device=device, username=username, location=location, movements=movements, status=status)
+            temperature = device.retrieve_last_temperature()
+            battery = device.retrieve_last_battery()
+            return render_template(
+                'device.html',
+                device=device,
+                username=username,
+                location=location,
+                movements=movements,
+                status=status,
+                temperature=temperature,
+                battery=battery
+            )
 
     abort(401)
 
 
-@app.route("/api/devices/<device_id>", methods = ['POST', 'GET'])
-def device_data(device_id):
+@app.route("/api/devices/<device_id>")
+def device_info(device_id):
+    device = Device.query.filter_by(id=device_id).first()
+    response = {
+        'id': device.id,
+        'name': device.name,
+        'description': device.description
+    }
+    return dumps(response), 200, {'ContentType': 'application/json'}
+
+
+@app.route("/api/devices/<device_id>/messages", methods = ['POST', 'GET'])
+def device_messages(device_id):
 
     if request.method == 'POST':
         device = Device.query.filter_by(id=device_id).first()
@@ -84,10 +104,22 @@ def device_status_data(device_id):
     return dumps(data), 200, {'ContentType': 'application/json'}
 
 
-@app.route("/api/devices/<device_id>/accelerometer_events")
-def device_accelerometer_data(device_id):
+@app.route("/api/devices/<device_id>/movements")
+def device_movement_data(device_id):
     device = Device.query.filter_by(id=device_id).first()
     data = device.retrieve_all_accelerometer_events()
+    return dumps(data), 200, {'ContentType': 'application/json'}
+
+@app.route("/api/devices/<device_id>/temperature")
+def device_temperature_data(device_id):
+    device = Device.query.filter_by(id=device_id).first()
+    data = device.retrieve_all_temperature()
+    return dumps(data), 200, {'ContentType': 'application/json'}
+
+@app.route("/api/devices/<device_id>/battery")
+def device_battery_data(device_id):
+    device = Device.query.filter_by(id=device_id).first()
+    data = device.retrieve_all_battery()
     return dumps(data), 200, {'ContentType': 'application/json'}
 
 
@@ -107,3 +139,65 @@ def device_save_message():
         for device in devices:
             response[device.name] = device.retrieve_all_messages()
         return dumps(response), 200, {'ContentType': 'application/json'}
+
+
+# Highcharts
+
+@app.route("/api/devices/<device_id>/high_charts/temperature")
+def device_highcharts_temperature_data(device_id):
+    device = Device.query.filter_by(id=device_id).first()
+    raw_data = device.retrieve_all_temperature()
+    data = list()
+    for entry in raw_data:
+        data.append( [ entry['timestamp'] * 1000, entry['temperature'] ] )
+
+    return dumps(data), 200, {'ContentType': 'application/json'}
+
+
+@app.route("/api/devices/<device_id>/high_charts/battery")
+def device_highcharts_battery_data(device_id):
+    device = Device.query.filter_by(id=device_id).first()
+    raw_data = device.retrieve_all_battery()
+    data = list()
+    for entry in raw_data:
+        data.append( [ entry['timestamp'] * 1000, entry['battery'] ] )
+
+    return dumps(data), 200, {'ContentType': 'application/json'}
+
+
+@app.route("/api/devices/<device_id>/high_charts/movements")
+def device_highcharts_movement_data(device_id):
+    device = Device.query.filter_by(id=device_id).first()
+    raw_data = device.retrieve_all_accelerometer_events()
+    data = list()
+    for entry in raw_data:
+        data.append([ entry['timestamp'] * 1000, 1 ])
+    return dumps(data), 200, {'ContentType': 'application/json'}
+
+
+@app.route("/api/devices/<device_id>/high_charts/status")
+def device_highcharts_status_data(device_id):
+    device = Device.query.filter_by(id=device_id).first()
+    raw_data = device.retrieve_all_status()
+    data = dict()
+
+    for i, entry in enumerate(raw_data):
+        if entry['status'] == 1 or entry['status'] == 2:
+            status = 1
+
+        else:
+            status = 0
+        timestamp = entry['timestamp']
+
+        if status not in data:
+            data[status] = list()
+
+        if i == 0:
+            data[status].append([ timestamp*1000 , int(time.time()*1000) ])
+        else:
+            data[status].append([ timestamp*1000 , previous*1000 ])
+
+        previous = timestamp
+
+
+    return dumps(data), 200, {'ContentType': 'application/json'}
