@@ -88,7 +88,7 @@ def get_last_location(device):
             except:
                 return None
             return {
-                'type': 'proximity',
+                'type': 'Proximity',
                 'beacon': beacon,
                 'timestamp': timestamp
             }
@@ -98,9 +98,9 @@ def get_last_location(device):
             max = -100
             id = 0
 
-            for beacon in location['beacons']:
-                if max < beacon['rssi']:
-                    id = beacon['id']
+            for entry in location['beacons']:
+                if max < entry['rssi']:
+                    id = entry['id']
             try:
                 beacon = Beacon.query.filter_by(identifier=id).first()
 
@@ -108,7 +108,7 @@ def get_last_location(device):
                 return None
 
             return {
-                'type': 'proximity',
+                'type': 'Proximity',
                 'beacon': beacon,
                 'timestamp': timestamp
             }
