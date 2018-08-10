@@ -1,10 +1,15 @@
 $(document).ready(function () {
 
+    Highcharts.setOptions({
+        time: {
+            timezoneOffset: -60
+        }
+    });
+
     var path = window.location.pathname.split('/');
     var device_id = path[2];
 
     // TEMPERATURE
-
     $.ajax({
         url: '/api/devices/' + device_id + '/high_charts/temperature',
         dataType: "json",
