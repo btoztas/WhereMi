@@ -102,8 +102,7 @@ def get_last_location(device):
                 if max < beacon['rssi']:
                     id = beacon['id']
             try:
-                beacon_id = id
-                beacon = Beacon.query.filter_by(identifier=beacon_id).first()
+                beacon = Beacon.query.filter_by(identifier=id).first()
 
             except:
                 return None
