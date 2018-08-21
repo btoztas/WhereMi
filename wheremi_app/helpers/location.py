@@ -196,6 +196,7 @@ def save_message(device, data):
     elif message_type == MESSAGE_STARTED_MOVING:
 
         device.save_status(timestamp, STATE_STARTED_MOVING)
+        device.save_accelerometer_event(timestamp)
 
 
     elif message_type == MESSAGE_MOVING:

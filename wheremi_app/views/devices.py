@@ -45,7 +45,7 @@ def get_device(device_id):
     if device != None:
         if current_user == device.user:
             location = get_last_location(device)
-            movements= device.retrieve_all_accelerometer_events()
+            movements = device.retrieve_all_accelerometer_events()
             status = device.retrieve_last_status()
             temperature = device.retrieve_last_temperature()
             battery = device.retrieve_last_battery()
