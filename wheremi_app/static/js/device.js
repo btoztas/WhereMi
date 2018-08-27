@@ -20,6 +20,7 @@ $(document).ready(function () {
             Highcharts.chart('temperatureChart', {
                 chart: {
                     type: 'spline'
+                    zoomType: 'xy'
                 },
                 title: {
                     text: 'Temperature'
@@ -77,7 +78,8 @@ $(document).ready(function () {
 
             Highcharts.chart('batteryChart', {
                 chart: {
-                    type: 'spline'
+                    type: 'spline',
+                    zoomType: 'xy'
                 },
                 title: {
                     text: 'Battery'
@@ -138,7 +140,7 @@ $(document).ready(function () {
             Highcharts.chart('movementChart', {
                 chart: {
                     type: 'scatter',
-                    zoomType: 'xy'
+                    zoomType: 'x'
                 },
                 title: {
                     text: 'Movement History'
@@ -254,7 +256,8 @@ $(document).ready(function () {
 
             Highcharts.chart('statusChart', {
                 chart: {
-                    type: 'scatter'
+                    type: 'scatter',
+                    zoomType: 'x'
                 },
                 title: {
                     text: 'Status History'
