@@ -78,7 +78,10 @@ def get_last_location(device):
         location = data['location']
 
         if location['type'] == LOCATION_TYPE_UNKNOWN:
-            return None
+            return {
+                'type': 'Unkown',
+                'timestamp': timestamp
+            }
 
         if location['type'] == LOCATION_TYPE_PROXIMITY:
 
@@ -86,7 +89,10 @@ def get_last_location(device):
                 beacon_id = location['id']
                 beacon = Beacon.query.filter_by(identifier=beacon_id).first()
             except:
-                return None
+                return {
+                    'type': 'Unkown',
+                    'timestamp': timestamp
+                }
             return {
                 'type': 'Proximity',
                 'beacon': beacon,
@@ -106,7 +112,10 @@ def get_last_location(device):
                 beacon = Beacon.query.filter_by(identifier=id).first()
 
             except:
-                return None
+                return {
+                    'type': 'Unkown',
+                    'timestamp': timestamp
+                }
 
             return {
                 'type': 'Proximity',
@@ -117,10 +126,15 @@ def get_last_location(device):
 
 def get_precision_location_from_payload(payload):
 
-    return { 'type': LOCATION_TYPE_UNKNOWN } if payload['num_beacons'] == 0 else \
-        { 'type': LOCATION_TYPE_PRECISION, 'num_beacons': payload['num_beacons'], 'beacons': payload['beacons'] }
+    if payload['num_beacons'] == 0:
+        return {'type': LOCATION_TYPE_UNKNOWN}
+
+    return { 'type': LOCATION_TYPE_PRECISION, 'num_beacons': payload['num_beacons'], 'beacons': payload['beacons'] }
 
 def get_proximity_locations_from_payload(payload, timestamp):
+
+    if payload['num_beacons'] == 0:
+        return { 'type': LOCATION_TYPE_UNKNOWN }
 
     locations = list()
 
