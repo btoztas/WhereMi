@@ -19,7 +19,7 @@ $(document).ready(function () {
 
             Highcharts.chart('temperatureChart', {
                 chart: {
-                    type: 'spline'
+                    type: 'spline',
                     zoomType: 'xy'
                 },
                 title: {
