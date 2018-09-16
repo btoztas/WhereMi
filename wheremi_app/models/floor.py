@@ -22,3 +22,7 @@ class Floor(db.Model):
 
     def __str__(self):
         return "" + str(self.id) + " - " + str(self.user_id) + " - " + self.name
+
+
+    def plan_file_path(self):
+        return "files/%s/%d/%s" % (self.user.username, self.id, self.plant_name)

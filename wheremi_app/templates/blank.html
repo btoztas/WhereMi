@@ -13,6 +13,10 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='vendor/font-awesome/css/font-awesome.min.css') }}"/>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/sb-admin.css') }}"/>
 
+
+    {% block head %}
+    {% endblock %}
+
 </head>
 
 <body class="fixed-nav sticky-footer bg-dark" id="page-top">

@@ -3,6 +3,7 @@ from flask_user import login_required
 from flask_login import current_user
 from wheremi_app import app, Device, Floor, Beacon
 from wheremi_app import sql as db
+from flask import jsonify
 
 @app.route("/floors/<home_floor_id>/beacons")
 @login_required
@@ -44,3 +45,15 @@ def get_beacon(home_floor_id, beacon_id):
             return render_template('beacon.html', beacon=beacon, username=username)
 
     abort(401)
+
+
+@app.route("/api/floors/<home_floor_id>/beacons")
+@login_required
+def api_list_beacons(home_floor_id):
+    home_floor = Floor.query.filter_by(user=current_user, id=home_floor_id).first()
+    if home_floor:
+        beacons = Beacon.query.filter_by(home_floor=home_floor).order_by(Beacon.identifier).all()
+        resp = jsonify(beacons=[beacon.serialize() for beacon in beacons])
+        resp.status_code = 200
+        return resp
+    abort(404)
