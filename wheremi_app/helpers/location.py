@@ -300,12 +300,12 @@ def save_message(device, data):
         accelerometer_events = get_accelerometer_events_from_payload(payload, timestamp)
         for event in accelerometer_events:
             device.save_accelerometer_event(event)
-            device.save_status(timestamp, STATE_MOVING)
+            device.save_status(event, STATE_MOVING)
 
         locations = get_proximity_locations_from_payload(payload, timestamp)
         for entry in locations:
                 device.save_location(entry['timestamp'], entry['location'])
-                device.save_status(timestamp, STATE_STOPPED)
+                device.save_status(entry['timestamp'], STATE_STOPPED)
 
 
 

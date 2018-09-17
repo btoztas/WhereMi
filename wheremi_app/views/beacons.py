@@ -1,12 +1,11 @@
 import json
 
 from bson.json_util import dumps
-from flask import render_template, request, redirect, url_for, abort
+from flask import render_template, request, redirect, abort
 from flask_user import login_required
 from flask_login import current_user
-from wheremi_app import app, Device, Floor, Beacon
+from wheremi_app import app, Floor, Beacon
 from wheremi_app import sql as db
-from flask import jsonify
 
 
 @app.route("/floors/<home_floor_id>/beacons")
