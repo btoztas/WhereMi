@@ -18,7 +18,8 @@ CONFIG_BEACON_TIME_RESOLUTION      = 16
 STATE_TURNED_ON               = 0
 STATE_STARTED_MOVING          = 1
 STATE_MOVING                  = 2
-STATE_RESTING                 = 3
+STATE_STOPPED                  = 3
+STATE_RESTING                 = 4
 
 # MESSAGE TYPES
 MESSAGE_TURNED_ON          = 0
@@ -102,17 +103,25 @@ def get_n_location(device, n):
                     'error': True,
                     'message': 'Error calculating proximity location'
                 }
+            if beacon:
+                return {
+                    'type': 'Proximity',
+                    'exists': True,
+                    'beacon': beacon,
+                    'beacon_info': beacon.serialize_for_map(),
+                    'timestamp': timestamp,
+                    'floor_id': home_floor.id,
+                    'x_real': beacon.x,
+                    'y_real': beacon.y,
+                    'x': home_floor.get_x_coordinate_on_map(beacon.x),
+                    'y': home_floor.get_x_coordinate_on_map(beacon.y)
+                }
             return {
-                'type': 'Proximity',
+                'type': 'Unknown',
                 'exists': True,
-                'beacon': beacon,
-                'beacon_info': beacon.serialize_for_map(),
                 'timestamp': timestamp,
-                'floor_id': home_floor.id,
-                'x_real': beacon.x,
-                'y_real': beacon.y,
-                'x': home_floor.get_x_coordinate_on_map(beacon.x),
-                'y': home_floor.get_x_coordinate_on_map(beacon.y)
+                'error': True,
+                'message': 'Error calculating proximity location'
             }
 
         if location['type'] == LOCATION_TYPE_PRECISION:
@@ -126,43 +135,53 @@ def get_n_location(device, n):
                     max = entry['rssi']
 
             beacon_strong = Beacon.query.filter_by(identifier=id, home_floor=home_floor).first()
+            if beacon_strong:
+                measurement = []
 
-            measurement = []
+                for entry in location['beacons']:
+                    beacon = Beacon.query.filter_by(identifier=entry['id'], home_floor=home_floor).first()
+                    if beacon:
+                        measurement.append({
+                            'rssi': entry['rssi'],
+                            'beacon':beacon
+                        })
+                if len(measurement) != 0:
+                    location = get_precision_location(measurement)
+                    x = location['x']
+                    y = location['y']
+                    map_zone = []
+                    for zone in location['zone']:
+                        map_zone.append(
+                            {
+                                'x': home_floor.get_x_coordinate_on_map(zone['x']),
+                                'y': home_floor.get_y_coordinate_on_map(zone['y']),
+                                'radius': home_floor.get_x_coordinate_on_map(zone['radius']),
+                            }
+                        )
 
-            for entry in location['beacons']:
-                measurement.append({
-                    'rssi': entry['rssi'],
-                    'beacon': Beacon.query.filter_by(identifier=entry['id'], home_floor=home_floor).first()
-                })
 
-            location = get_precision_location(measurement)
-            x = location['x']
-            y = location['y']
-            map_zone = []
-            for zone in location['zone']:
-                map_zone.append(
-                    {
-                        'x': home_floor.get_x_coordinate_on_map(zone['x']),
-                        'y': home_floor.get_y_coordinate_on_map(zone['y']),
-                        'radius': home_floor.get_x_coordinate_on_map(zone['radius']),
+                    return {
+                        'type': 'Precision',
+                        'exists': True,
+                        'beacon': beacon_strong,
+                        'beacon_info': beacon_strong.serialize_for_map(),
+                        'timestamp': timestamp,
+                        'floor_id': home_floor.id,
+                        'x_real': x,
+                        'y_real': y,
+                        'x': home_floor.get_x_coordinate_on_map(x),
+                        'y': home_floor.get_x_coordinate_on_map(y),
+                        'zone': map_zone,
+
                     }
-                )
-
-
             return {
-                'type': 'Precision',
+                'type': 'Unknown',
                 'exists': True,
-                'beacon': beacon_strong,
-                'beacon_info': beacon_strong.serialize_for_map(),
                 'timestamp': timestamp,
-                'floor_id': home_floor.id,
-                'x_real': x,
-                'y_real': y,
-                'x': home_floor.get_x_coordinate_on_map(x),
-                'y': home_floor.get_x_coordinate_on_map(y),
-                'zone': map_zone,
-
+                'error': True,
+                'message': 'Error calculating precision location'
             }
+
 
     return {
         'type': 'Unknown',
@@ -269,7 +288,7 @@ def save_message(device, data):
         device.save_status(timestamp, STATE_MOVING)
 
         location = get_precision_location_from_payload(payload)
-        device.save_location(LOCATION_TYPE_PRECISION, timestamp, location)
+        device.save_location(timestamp, location)
 
         accelerometer_events = get_accelerometer_events_from_payload(payload, timestamp)
         for event in accelerometer_events:
@@ -278,28 +297,15 @@ def save_message(device, data):
 
     elif message_type == MESSAGE_PROXIMITY_LOCATION:
 
-        device.save_status(timestamp, STATE_MOVING)
-
         accelerometer_events = get_accelerometer_events_from_payload(payload, timestamp)
         for event in accelerometer_events:
             device.save_accelerometer_event(event)
+            device.save_status(timestamp, STATE_MOVING)
 
         locations = get_proximity_locations_from_payload(payload, timestamp)
         for entry in locations:
                 device.save_location(entry['timestamp'], entry['location'])
-
-
-def find_location(data):
-
-    type = data['location']['type']
-
-    # CASE UNKNOWN
-    if type == LOCATION_TYPE_UNKNOWN:
-        return
-
-    # CASE PROXIMITY
-
-    # CASE PRECISION
+                device.save_status(timestamp, STATE_STOPPED)
 
 
 
@@ -314,6 +320,9 @@ def decode_status(status):
 
     elif status == STATE_MOVING:
         return 'Moving'
+
+    elif status == STATE_STOPPED:
+        return 'Stopped'
 
     elif status == STATE_RESTING:
         return 'Resting'

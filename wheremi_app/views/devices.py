@@ -3,7 +3,7 @@ from bson.json_util import dumps
 from flask import render_template, request, redirect, url_for, abort
 from flask_user import login_required
 from flask_login import current_user
-from wheremi_app import app, Device, Floor, Beacon
+from wheremi_app import app, Device, Floor
 from wheremi_app import sql
 from wheremi_app.helpers.location import save_message, get_n_location
 import time
@@ -90,6 +90,16 @@ def device_messages(device_id):
         data = device.retrieve_all_messages()
         return dumps(data), 200, {'ContentType': 'application/json'}
 
+@app.route("/api/devices/<device_id>/messages/many", methods = ['POST', 'GET'])
+def device_many_messages(device_id):
+
+    if request.method == 'POST':
+        device = Device.query.filter_by(id=device_id).first()
+        messages = request.get_json()
+        for data in messages:
+            save_message(device, data)
+
+        return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
 @app.route("/api/devices/<device_id>/locations")
 @login_required
@@ -193,8 +203,10 @@ def device_highcharts_status_data(device_id):
 
     for i, entry in enumerate(raw_data):
         if entry['status'] == 1 or entry['status'] == 2:
-            status = 1
+            status = 2
 
+        elif entry['status'] == 3:
+            status = 1
         else:
             status = 0
         timestamp = entry['timestamp']

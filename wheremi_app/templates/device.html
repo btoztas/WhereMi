@@ -100,7 +100,7 @@
         </table>
     </div>
     <div class="card-body">
-        {% if location %}
+        {% if location.exists %}
         <p hidden id="locationCount">0</p>
         <table class="table" id="locationTable" width="100%" cellspacing="0">
             <tbody>
@@ -185,17 +185,6 @@
     </div>
     <div class="card-body">
         {% if movements %}
-        <table class="table" id="movementTable" width="100%" cellspacing="0">
-            <tbody>
-            {% for movement in movements %}
-            <tr>
-                <td>
-                    <b>Timestamp:</b> {{ movement.timestamp | format_unix_time }}
-                </td>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
         <div id="movementChart" style="min-width: 310px; height: 250px; margin: 0 auto"></div>
         {% else %}
         There are no recent movement acknowledgements.

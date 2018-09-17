@@ -157,8 +157,8 @@ function updatePositionHTML(n, data) {
 
     timestamp = new Date(data['location']['timestamp'] * 1000);
 
-    day = (timestamp.getDay() < 10) ? ('0' + timestamp.getDay()) : (timestamp.getDay());
-    month = (timestamp.getMonth() < 10) ? ('0' + timestamp.getMonth()) : (timestamp.getMonth());
+    day = (timestamp.getDate() < 10) ? ('0' + timestamp.getDate()) : (timestamp.getDate());
+    month = (timestamp.getMonth()+1 < 10) ? ('0' + (timestamp.getMonth() + 1)) : (timestamp.getMonth() + 1);
     year = timestamp.getFullYear();
     hours = (timestamp.getHours() < 10) ? ('0' + timestamp.getHours()) : (timestamp.getHours());
     minutes = (timestamp.getMinutes() < 10) ? ('0' + timestamp.getMinutes()) : (timestamp.getMinutes());
@@ -452,12 +452,16 @@ $(document).ready(function () {
                         color = 'black';
                         break;
                     case '1':
+                        state = 'Stopped';
+                        color = 'grey';
+                        break;
+                    case '2':
                         state = 'Moving';
                         color = 'red';
                         break;
                     default:
                         state = 'Unknown';
-                        color = 'grey';
+                        color = 'blue';
                 }
                 var dataRaw = data[key];
                 var serie = {
@@ -507,16 +511,7 @@ $(document).ready(function () {
                     title: {
                         text: 'Time'
                     },
-                    type: 'datetime',
-                    dateTimeLabelFormats: { //force all formats to be hour:minute
-                        second: '%H:%M',
-                        minute: '%H:%M',
-                        hour: '%H:%M',
-                        day: '%H:%M',
-                        week: '%H:%M',
-                        month: '%H:%M',
-                        year: '%H:%M'
-                    }
+                    type: 'datetime'
                 },
 
                 yAxis: {
