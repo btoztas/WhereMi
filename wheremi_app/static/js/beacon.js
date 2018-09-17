@@ -1,20 +1,19 @@
 $(document).ready(function () {
 
-
-
     var path = window.location.pathname.split('/');
     var floor_id = path[2];
+    var beacon_id = path[4];
     var layers = [];
 
     $.ajax({
-        url: '/api/floors/' + floor_id,
+        url: '/api/floors/' + floor_id + '/beacons/' +  beacon_id,
         dataType: "json",
 
         success: function (data) {
 
 
-            var plan_size_x = data['floor']['x_size'];
-            var plan_size_y = data['floor']['y_size'];
+            var plan_size_x = data['x'];
+            var plan_size_y = data['y'];
 
             // Map views always need a projection.  Here we just want to map image
             // coordinates directly to map coordinates, so we create a projection that uses
@@ -36,44 +35,32 @@ $(document).ready(function () {
             layers.push(map_layer);
 
 
-            Object.keys(data['beacons']).forEach(function (key) {
-
-                var x = data['beacons'][key]['x'];
-                var y = data['beacons'][key]['y'];
-                var name = data['beacons'][key]['name'];
-                var description = data['beacons'][key]['description'];
-                var identifier = data['beacons'][key]['identifier'];
-
-
-                // ICON----
-                var iconFeature = new ol.Feature({
-                    geometry: new ol.geom.Point([x, y]),
-                    identifier: identifier,
-                    description: description,
-                    name: name
-                });
-
-                var iconStyle = new ol.style.Style({
-                    image: new ol.style.Icon(/** @type {module:ol/style/Icon~Options} */ ({
-                        src: 'https://openlayers.org/en/latest/examples/data/icon.png'
-                    }))
-                });
-
-                iconFeature.setStyle(iconStyle);
-
-                var vectorSource = new ol.source.Vector({
-                    features: [iconFeature]
-                });
-
-                var vectorLayer = new ol.layer.Vector({
-                    source: vectorSource
-                });
-                // ICON----
-
-                layers.push(vectorLayer);
-                console.log(layers);
+            // ICON----
+            var iconFeature = new ol.Feature({
+                geometry: new ol.geom.Point([x, y]),
+                identifier: identifier,
+                description: description,
+                name: name
             });
 
+            var iconStyle = new ol.style.Style({
+                image: new ol.style.Icon(/** @type {module:ol/style/Icon~Options} */ ({
+                    src: 'https://openlayers.org/en/latest/examples/data/icon.png'
+                }))
+            });
+
+            iconFeature.setStyle(iconStyle);
+
+            var vectorSource = new ol.source.Vector({
+                features: [iconFeature]
+            });
+
+            var vectorLayer = new ol.layer.Vector({
+                source: vectorSource
+            });
+            // ICON----
+
+            layers.push(vectorLayer);
 
             var map = new ol.Map({
                 layers: layers,

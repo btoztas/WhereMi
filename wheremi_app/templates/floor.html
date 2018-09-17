@@ -1,7 +1,6 @@
 {% extends 'blank.html' %}
 
 {% block head %}
-<script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.2.0/build/ol.js"></script>
 <link rel="stylesheet" href="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.2.0/css/ol.css">
 <style>
     .map {
@@ -62,12 +61,34 @@
             </tr>
             <tr>
                 <td>
-                    <b>Created at:</b> {{ floor.created_at }}
+                    <b>Ratio X:</b> {{ floor.x_ratio }}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <b>Offset X:</b> {{ floor.x_offset }}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <b>Ratio Y:</b> {{ floor.y_ratio }}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <b>Offset Y:</b> {{ floor.y_offset }}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <b>Created at:</b> {{ floor.created_at | format_time_from_time_object }}
                 </td>
             </tr>
             <tr>
                 <td valign="center" align="center">
-                    <div id="map" class="map"><div id="popup"></div></div>
+                    <div id="map" class="map">
+                        <div id="popup"></div>
+                    </div>
                 </td>
             </tr>
             </tbody>
@@ -79,63 +100,6 @@
 {% endblock %}
 
 {% block scripts %}
-<script type="text/javascript">
-
-
-
-
-    // Map views always need a projection.  Here we just want to map image
-    // coordinates directly to map coordinates, so we create a projection that uses
-    // the image extent in pixels.
-    var extent = [0, 0, 2048, 1024];
-    var projection = new ol.proj.Projection({
-        code: 'xkcd-image',
-        units: 'pixels',
-        extent: extent
-    });
-
-
-    // ICON----
-    var iconFeature = new ol.Feature({
-        geometry: new ol.geom.Point([1024, 512])
-    });
-
-    var iconStyle = new ol.style.Style({
-        image: new ol.style.Icon(/** @type {module:ol/style/Icon~Options} */ ({
-            src: 'https://openlayers.org/en/latest/examples/data/icon.png'
-        }))
-    });
-
-    iconFeature.setStyle(iconStyle);
-
-    var vectorSource = new ol.source.Vector({
-        features: [iconFeature]
-    });
-
-    var vectorLayer = new ol.layer.Vector({
-        source: vectorSource
-    });
-    // ICON----
-
-
-    var map = new ol.Map({
-        layers: [
-            new ol.layer.Image({
-                source: new ol.source.ImageStatic({
-                    url: 'http://127.0.0.1:5000/static/files/bruno/2/plant.png',
-                    projection: projection,
-                    imageExtent: extent
-                })
-            }),
-            vectorLayer
-        ],
-        target: 'map',
-        view: new ol.View({
-            projection: projection,
-            center: [1024, 512, 1024, 512],
-            zoom: 2,
-            maxZoom: 4
-        })
-    });
-</script>
+<script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.2.0/build/ol.js"></script>
+<script src="{{ url_for('static', filename='js/floor.js') }}"></script>
 {% endblock %}

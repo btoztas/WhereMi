@@ -3,34 +3,58 @@
 {% block body %}
 
 
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="/">WhereMi</a></li>
-        <li class="breadcrumb-item active"><a href="/floors">Floors</a></li>
-        <li class="breadcrumb-item active">New</li>
-    </ol>
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">WhereMi</a></li>
+    <li class="breadcrumb-item active"><a href="/floors">Floors</a></li>
+    <li class="breadcrumb-item active">New</li>
+</ol>
 
-    <div class="card mb-3">
-        <div class="card-header">
-            <i class="fa fa-plus"></i> New Floor
-        </div>
-        <div class="card-body">
-            <form method="post" enctype=multipart/form-data>
-                <div class="form-group">
-                    <label for="name">Name</label>
-                    <br>
-                    <input class="form-control" id="name" type="text" name="name" maxlength="50" required/>
-                    <br>
-                    <label for="description">Description</label>
-                    <br>
-                    <input class="form-control" id="description" type="text" name="description" maxlength="150" required/>
-                    <br>
-                    <label for="file">Plant</label>
-                    <br>
-                    <input class="form-control" type="file" id="file" name="file"/>
-                </div>
-                <button class="btn btn-primary btn-block" type="submit">New Floor</button>
-            </form>
-        </div>
-
+<div class="card mb-3">
+    <div class="card-header">
+        <i class="fa fa-plus"></i> New Floor
     </div>
+    <div class="card-body">
+        <form method="post" enctype=multipart/form-data>
+            <div class="form-group">
+                <label for="name">Name</label>
+                <br>
+                <input class="form-control" id="name" type="text" name="name" maxlength="50" required/>
+                <br>
+                <label for="description">Description</label>
+                <br>
+                <input class="form-control" id="description" type="text" name="description" maxlength="150" required/>
+                <br>
+                <label for="file">Floor Plan</label>
+                <br>
+                <input class="form-control" type="file" id="file" name="file"/>
+                <br>
+                <div class="input-group">
+                        <label for="x-size">X Plan Size</label>
+                        <input type="number" class="form-control" id="x-size" name="x-size" placeholder="0" required/>
+                        <label for="y-size">Y Plan Size</label>
+                        <input type="number" class="form-control" id="y-size" name="y-size" placeholder="0"
+                               required/>
+                </div>
+                <br>
+                <div class="input-group">
+                        <label for="x-ratio">X Plan Ratio</label>
+                        <input type="number" step="any" class="form-control" id="x-ratio" name="x-ratio" placeholder="0" required/>
+                        <label for="x-offset">X Plan Offset</label>
+                        <input type="number" class="form-control" id="x-offset" name="x-offset" placeholder="0"
+                               required/>
+                </div>
+                <br>
+                <div class="input-group">
+                        <label for="y-ratio">Y Plan Ratio</label>
+                        <input type="number" step="any" class="form-control" id="y-ratio" name="y-ratio" placeholder="0" required/>
+                        <label for="y-offset">Y Plan Offset</label>
+                        <input type="number" class="form-control" id="y-offset" name="y-offset" placeholder="0"
+                               required/>
+                </div>
+            </div>
+            <button class="btn btn-primary btn-block" type="submit">New Floor</button>
+        </form>
+    </div>
+
+</div>
 {% endblock %}

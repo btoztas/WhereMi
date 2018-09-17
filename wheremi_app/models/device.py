@@ -10,8 +10,6 @@ class Device(db.Model):
     description = db.Column(db.String(150), nullable=False)
     home_floor_id = db.Column(db.Integer, db.ForeignKey('floor.id'))
 
-    location_mode = db.Column(db.String(50), nullable=False)
-
     message_collection_name = db.Column(db.String(50), nullable=False)
     location_collection_name = db.Column(db.String(50), nullable=False)
     accelerometer_event_collection_name = db.Column(db.String(50), nullable=False)
@@ -30,7 +28,6 @@ class Device(db.Model):
         self.name = name
         self.description = description
         self.home_floor_id = home_floor_id
-        self.location_mode = "proximity"
         self.battery_collection_name = self.create_battery_collection_name(user_id, name)
         self.temperature_collection_name = self.create_temperature_collection_name(user_id, name)
         self.message_collection_name = self.create_message_collection_name(user_id, name)

@@ -10,8 +10,8 @@ class Beacon(db.Model):
     description = db.Column(db.String(150), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
-    x = db.Column(db.Integer, default=100)
-    y = db.Column(db.Integer, default=100)
+    x = db.Column(db.Integer, nullable=False, default=0)
+    y = db.Column(db.Integer, nullable=False, default=0)
 
     home_floor = db.relationship('Floor', foreign_keys=home_floor_id)
 
@@ -35,4 +35,15 @@ class Beacon(db.Model):
             'created_at': self.created_at,
             'x': self.x,
             'y': self.y,
+        }
+
+    def serialize_for_map(self):
+        return {
+            'identifier': self.identifier,
+            'name': self.name,
+            'home_floor_id': self.home_floor_id,
+            'description': self.description,
+            'created_at': self.created_at,
+            'x': self.home_floor.get_x_coordinate_on_map(self.x),
+            'y': self.home_floor.get_y_coordinate_on_map(self.y)
         }
