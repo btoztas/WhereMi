@@ -5,7 +5,7 @@ from flask_user import login_required
 from flask_login import current_user
 from wheremi_app import app, Device, Floor, Beacon
 from wheremi_app import sql
-from wheremi_app.helpers.location import get_last_location, save_message
+from wheremi_app.helpers.location import save_message, get_n_location
 import time
 
 @app.route("/devices")
@@ -44,7 +44,7 @@ def get_device(device_id):
     device = Device.query.filter_by(user=current_user, id=device_id).first()
     if device != None:
         if current_user == device.user:
-            location = get_last_location(device)
+            location = get_n_location(device, 0)
             movements = device.retrieve_all_accelerometer_events()
             status = device.retrieve_last_status()
             temperature = device.retrieve_last_temperature()
@@ -64,6 +64,7 @@ def get_device(device_id):
 
 
 @app.route("/api/devices/<device_id>")
+@login_required
 def device_info(device_id):
     device = Device.query.filter_by(id=device_id).first()
     response = {
@@ -91,6 +92,7 @@ def device_messages(device_id):
 
 
 @app.route("/api/devices/<device_id>/locations")
+@login_required
 def device_location_data(device_id):
     device = Device.query.filter_by(id=device_id).first()
     data = device.retrieve_all_locations()
@@ -98,6 +100,7 @@ def device_location_data(device_id):
 
 
 @app.route("/api/devices/<device_id>/status")
+@login_required
 def device_status_data(device_id):
     device = Device.query.filter_by(id=device_id).first()
     data = device.retrieve_all_status()
@@ -105,18 +108,21 @@ def device_status_data(device_id):
 
 
 @app.route("/api/devices/<device_id>/movements")
+@login_required
 def device_movement_data(device_id):
     device = Device.query.filter_by(id=device_id).first()
     data = device.retrieve_all_accelerometer_events()
     return dumps(data), 200, {'ContentType': 'application/json'}
 
 @app.route("/api/devices/<device_id>/temperature")
+@login_required
 def device_temperature_data(device_id):
     device = Device.query.filter_by(id=device_id).first()
     data = device.retrieve_all_temperature()
     return dumps(data), 200, {'ContentType': 'application/json'}
 
 @app.route("/api/devices/<device_id>/battery")
+@login_required
 def device_battery_data(device_id):
     device = Device.query.filter_by(id=device_id).first()
     data = device.retrieve_all_battery()
@@ -144,6 +150,7 @@ def device_save_message():
 # Highcharts
 
 @app.route("/api/devices/<device_id>/high_charts/temperature")
+@login_required
 def device_highcharts_temperature_data(device_id):
     device = Device.query.filter_by(id=device_id).first()
     raw_data = device.retrieve_all_temperature()
@@ -155,6 +162,7 @@ def device_highcharts_temperature_data(device_id):
 
 
 @app.route("/api/devices/<device_id>/high_charts/battery")
+@login_required
 def device_highcharts_battery_data(device_id):
     device = Device.query.filter_by(id=device_id).first()
     raw_data = device.retrieve_all_battery()
@@ -166,6 +174,7 @@ def device_highcharts_battery_data(device_id):
 
 
 @app.route("/api/devices/<device_id>/high_charts/movements")
+@login_required
 def device_highcharts_movement_data(device_id):
     device = Device.query.filter_by(id=device_id).first()
     raw_data = device.retrieve_all_accelerometer_events()
@@ -176,6 +185,7 @@ def device_highcharts_movement_data(device_id):
 
 
 @app.route("/api/devices/<device_id>/high_charts/status")
+@login_required
 def device_highcharts_status_data(device_id):
     device = Device.query.filter_by(id=device_id).first()
     raw_data = device.retrieve_all_status()
@@ -201,3 +211,43 @@ def device_highcharts_status_data(device_id):
 
 
     return dumps(data), 200, {'ContentType': 'application/json'}
+
+
+
+@app.route("/api/devices/<device_id>/location")
+@login_required
+def device_location_api(device_id):
+    device = Device.query.filter_by(user=current_user, id=device_id).first()
+    if device != None:
+        if current_user == device.user:
+            location = get_n_location(device, 0)
+            if 'beacon' in location: del location['beacon']
+            floor = device.home_floor
+            return dumps(
+                {
+                    'location': location,
+                    'floor': floor.serialize()
+                }
+            ), 200, {'ContentType': 'application/json'}
+
+    abort(401)
+
+
+@app.route("/api/devices/<device_id>/location/<int:n>")
+@login_required
+def device_location_n_api(device_id, n):
+    device = Device.query.filter_by(user=current_user, id=device_id).first()
+    if device != None:
+        if current_user == device.user:
+            location = get_n_location(device, n)
+            if 'beacon' in location: del location['beacon']
+            floor = device.home_floor
+            return dumps(
+                {
+                    'location': location,
+                    'floor': floor.serialize()
+                }
+            ), 200, {'ContentType': 'application/json'}
+
+    abort(401)
+

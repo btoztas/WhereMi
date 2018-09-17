@@ -111,10 +111,10 @@ class Device(db.Model):
         documents = collection.find({}, {'_id': False}).sort([('timestamp', -1)])
         return documents
 
-    def retrieve_last_location(self):
+    def retrieve_last_location(self, n):
         collection = mongo.db[self.location_collection_name]
         try:
-            documents = collection.find({}, {'_id': False}).sort([('timestamp', -1)]).limit(1)[0]
+            documents = collection.find({}, {'_id': False}).sort([('timestamp', -1)]).skip(n).limit(1)[0]
         except:
             return None
         return documents

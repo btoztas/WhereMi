@@ -4,24 +4,30 @@ from datetime import datetime
 
 class Beacon(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    identifier = db.Column(db.String(50), nullable=False, unique=True)
+    identifier = db.Column(db.String(50), nullable=False)
     name = db.Column(db.String(50), nullable=False)
     home_floor_id = db.Column(db.Integer, db.ForeignKey('floor.id'), nullable=False)
     description = db.Column(db.String(150), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+
     x = db.Column(db.Integer, nullable=False, default=0)
     y = db.Column(db.Integer, nullable=False, default=0)
 
+    decay = db.Column(db.Float, nullable=False, default=2.5)
+    rssi_ref = db.Column(db.Float, nullable=False, default=-48)
+
     home_floor = db.relationship('Floor', foreign_keys=home_floor_id)
 
-    def __init__(self, identifier, home_floor_id, name, description, x, y):
+    def __init__(self, identifier, home_floor_id, name, description, x, y, decay, rssi_ref):
         self.identifier = identifier
         self.home_floor_id = home_floor_id
         self.name = name
         self.description = description
         self.x = x
         self.y = y
+        self.decay = decay
+        self.rssi_ref = rssi_ref
 
     def __str__(self):
         return "" + str(self.id) + " - " + self.name

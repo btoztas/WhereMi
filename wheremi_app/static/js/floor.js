@@ -55,7 +55,8 @@ $(document).ready(function () {
 
                 var iconStyle = new ol.style.Style({
                     image: new ol.style.Icon(/** @type {module:ol/style/Icon~Options} */ ({
-                        src: 'https://openlayers.org/en/latest/examples/data/icon.png'
+                        src: 'https://cdn1.iconfinder.com/data/icons/map-and-navigation-9/64/58-512.png',
+                        scale: 0.1
                     }))
                 });
 

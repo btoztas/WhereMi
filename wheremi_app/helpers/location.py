@@ -2,6 +2,8 @@ import operator
 from wheremi_app import Beacon, app
 
 # CONFIGS
+from wheremi_app.helpers.precision_location import get_precision_location
+
 CONFIG_PRECISION_SEND_TIMER        = 7200
 CONFIG_PROXIMITY_SEND_TIMER        = 900
 CONFIG_MOVEMENT_START_TIMER        = 30
@@ -70,33 +72,47 @@ def decode_accelerometer_event_timestamp(send_timestamp, relative_timestamp):
     return send_timestamp - (12-relative_timestamp)*time_interval + time_interval/2
 
 
-def get_last_location(device):
+def get_n_location(device, n):
 
-    data = device.retrieve_last_location()
-    if data:
+    data = device.retrieve_last_location(n)
+    home_floor = device.home_floor
+    if data != None:
         timestamp = data['timestamp']
         location = data['location']
 
         if location['type'] == LOCATION_TYPE_UNKNOWN:
             return {
-                'type': 'Unkown',
-                'timestamp': timestamp
+                'type': 'Unknown',
+                'exists': True,
+                'timestamp': timestamp,
+                'error': False,
+                'message': 'Beacon unknown or no beacon seen'
             }
 
         if location['type'] == LOCATION_TYPE_PROXIMITY:
 
             try:
                 beacon_id = location['id']
-                beacon = Beacon.query.filter_by(identifier=beacon_id).first()
+                beacon = Beacon.query.filter_by(identifier=beacon_id, home_floor=home_floor).first()
             except:
                 return {
-                    'type': 'Unkown',
-                    'timestamp': timestamp
+                    'type': 'Unknown',
+                    'exists': True,
+                    'timestamp': timestamp,
+                    'error': True,
+                    'message': 'Error calculating proximity location'
                 }
             return {
                 'type': 'Proximity',
+                'exists': True,
                 'beacon': beacon,
-                'timestamp': timestamp
+                'beacon_info': beacon.serialize_for_map(),
+                'timestamp': timestamp,
+                'floor_id': home_floor.id,
+                'x_real': beacon.x,
+                'y_real': beacon.y,
+                'x': home_floor.get_x_coordinate_on_map(beacon.x),
+                'y': home_floor.get_x_coordinate_on_map(beacon.y)
             }
 
         if location['type'] == LOCATION_TYPE_PRECISION:
@@ -108,20 +124,55 @@ def get_last_location(device):
                 if max < entry['rssi']:
                     id = entry['id']
                     max = entry['rssi']
-            try:
-                beacon = Beacon.query.filter_by(identifier=id).first()
 
-            except:
-                return {
-                    'type': 'Unkown',
-                    'timestamp': timestamp
-                }
+            beacon_strong = Beacon.query.filter_by(identifier=id, home_floor=home_floor).first()
+
+            measurement = []
+
+            for entry in location['beacons']:
+                measurement.append({
+                    'rssi': entry['rssi'],
+                    'beacon': Beacon.query.filter_by(identifier=entry['id'], home_floor=home_floor).first()
+                })
+
+            location = get_precision_location(measurement)
+            x = location['x']
+            y = location['y']
+            map_zone = []
+            for zone in location['zone']:
+                map_zone.append(
+                    {
+                        'x': home_floor.get_x_coordinate_on_map(zone['x']),
+                        'y': home_floor.get_y_coordinate_on_map(zone['y']),
+                        'radius': home_floor.get_x_coordinate_on_map(zone['radius']),
+                    }
+                )
+
 
             return {
-                'type': 'Proximity',
-                'beacon': beacon,
-                'timestamp': timestamp
+                'type': 'Precision',
+                'exists': True,
+                'beacon': beacon_strong,
+                'beacon_info': beacon_strong.serialize_for_map(),
+                'timestamp': timestamp,
+                'floor_id': home_floor.id,
+                'x_real': x,
+                'y_real': y,
+                'x': home_floor.get_x_coordinate_on_map(x),
+                'y': home_floor.get_x_coordinate_on_map(y),
+                'zone': map_zone,
+
             }
+
+    return {
+        'type': 'Unknown',
+        'exists': False,
+        'error': False,
+        'message': 'No registered location'
+    }
+
+
+
 
 
 def get_precision_location_from_payload(payload):

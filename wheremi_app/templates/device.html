@@ -1,5 +1,13 @@
 {% extends 'blank.html' %}
-
+{% block head %}
+<link rel="stylesheet" href="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.2.0/css/ol.css">
+<style>
+    .map {
+        height: 400px;
+        width: 100%;
+    }
+</style>
+{% endblock %}
 {% block body %}
 
 <ol class="breadcrumb">
@@ -64,29 +72,61 @@
 
 <div class="card mb-3">
     <div class="card-header">
-        <i class="fa fa-info-circle"></i> {{ device.name }} - Location History
+
+        <table border="0" width="100%" cellspacing="0">
+            <tbody>
+            <tr>
+                <td width="87.5%">
+
+                    <i class="fa fa-info-circle"></i> {{ device.name }} - Location History
+
+                </td>
+                {% if location %}
+                <td>
+                    <button class="btn btn-primary" id="backHistory"
+                            onclick="backHistory()">
+                        <
+                    </button>
+                </td>
+                <td>
+                    <button class="btn btn-primary" id="nextHistory"
+                            onclick="nextHistory()">
+                        >
+                    </button>
+                </td>
+                {% endif %}
+            </tr>
+            </tbody>
+        </table>
     </div>
     <div class="card-body">
         {% if location %}
+        <p hidden id="locationCount">0</p>
         <table class="table" id="locationTable" width="100%" cellspacing="0">
             <tbody>
             <tr>
                 <td>
-                    <b>Location Algorithm:</b> {{ location.type }}
+                    <b>Location Algorithm:</b> <span id="locationAlgorithm">{{ location.type }} </span>
                 </td>
             <tr>
                 <td>
-                    {% if location.beacon %}
-                    <b>Last seen by:</b> {{ location.beacon.identifier }} - {{ location.beacon.name }} - {{ location.beacon.description }}
+                    <b>Position:</b>
+                    <span id="locationPosition">
+                    {% if location.type == 'Proximity' %}
+                        Strongest Beacon - {{ location.beacon.identifier }} - {{ location.beacon.name }} - {{location.beacon.description }}
+                    {% elif location.type == 'Precision' %}
+                        <b>X = </b> {{ location.x_real }} cm ||
+                        <b>Y = </b> {{ location.y_real }} cm ||<br>
+                        Strongest Beacon: {{ location.beacon.identifier }} - {{ location.beacon.name }} - {{location.beacon.description }}
                     {% else %}
-                    <b>Last seen by: Unknown</b>
+                        Unknown
                     {% endif %}
+                    </span>
                 </td>
             </tr>
-
             <tr>
                 <td>
-                    <b>Timestamp at:</b> {{ location.timestamp | format_unix_time }}
+                    <b>Timestamp at:</b> <span id = "locationTimestamp">{{ location.timestamp | format_unix_time }} </span>
                 </td>
             </tr>
             {% if location.beacon %}
@@ -98,8 +138,9 @@
             {% endif %}
             <tr>
                 <td valign="center" align="center">
-                    <img src="{{ url_for( 'static', filename='files/%s' % [username, '/', device.id, '/', device.name]|join ) }}"
-                         alt="Floor Plant" width="80%">
+                    <div id="map" class="map">
+                        <div id="popup"></div>
+                    </div>
                 </td>
             </tr>
             </tbody>
@@ -116,22 +157,22 @@
     </div>
     <div class="card-body">
         {% if status %}
-            <table class="table" id="infoTable" width="100%" cellspacing="0">
-                <tbody>
-                <tr>
-                    <td>
-                        <b>Info:</b> {{ status.status | decode_status }}
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <b>Last status message:</b> {{ status.timestamp | format_unix_time}}
-                    </td>
-                </tr>
+        <table class="table" id="infoTable" width="100%" cellspacing="0">
+            <tbody>
+            <tr>
+                <td>
+                    <b>Info:</b> {{ status.status | decode_status }}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <b>Last status message:</b> {{ status.timestamp | format_unix_time}}
+                </td>
+            </tr>
 
-                </tbody>
-            </table>
-            <div id="statusChart" style="min-width: 310px; height: 150px; margin: 0 auto"></div>
+            </tbody>
+        </table>
+        <div id="statusChart" style="min-width: 310px; height: 150px; margin: 0 auto"></div>
         {% else %}
         There are no recent info acknowledgements.
         {% endif %}
@@ -147,11 +188,11 @@
         <table class="table" id="movementTable" width="100%" cellspacing="0">
             <tbody>
             {% for movement in movements %}
-                <tr>
-                    <td>
-                        <b>Timestamp:</b> {{ movement.timestamp | format_unix_time }}
-                    </td>
-                </tr>
+            <tr>
+                <td>
+                    <b>Timestamp:</b> {{ movement.timestamp | format_unix_time }}
+                </td>
+            </tr>
             {% endfor %}
             </tbody>
         </table>
@@ -169,23 +210,23 @@
     </div>
     <div class="card-body">
         {% if temperature %}
-            <table class="table" id="infoTable" width="100%" cellspacing="0">
-                <tbody>
-                <tr>
-                    <td>
-                        <b>Temperature:</b> {{ temperature.temperature }}
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <b>Timestamp:</b> {{ temperature.timestamp | format_unix_time}}
-                    </td>
-                </tr>
+        <table class="table" id="infoTable" width="100%" cellspacing="0">
+            <tbody>
+            <tr>
+                <td>
+                    <b>Temperature:</b> {{ temperature.temperature }}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <b>Timestamp:</b> {{ temperature.timestamp | format_unix_time}}
+                </td>
+            </tr>
 
-                </tbody>
-            </table>
+            </tbody>
+        </table>
 
-            <div id="temperatureChart" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+        <div id="temperatureChart" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
 
 
         {% else %}
@@ -200,23 +241,23 @@
     </div>
     <div class="card-body">
         {% if battery %}
-            <table class="table" id="infoTable" width="100%" cellspacing="0">
-                <tbody>
-                <tr>
-                    <td>
-                        <b>Battery:</b> {{ battery.battery }}
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <b>Timestamp:</b> {{ battery.timestamp | format_unix_time}}
-                    </td>
-                </tr>
+        <table class="table" id="infoTable" width="100%" cellspacing="0">
+            <tbody>
+            <tr>
+                <td>
+                    <b>Battery:</b> {{ battery.battery }}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <b>Timestamp:</b> {{ battery.timestamp | format_unix_time}}
+                </td>
+            </tr>
 
-                </tbody>
-            </table>
+            </tbody>
+        </table>
 
-            <div id="batteryChart" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+        <div id="batteryChart" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
 
         {% else %}
         There are no recent info acknowledgements.
@@ -232,6 +273,7 @@
 <script src="https://code.highcharts.com/highcharts.js"></script>
 <script src="https://code.highcharts.com/modules/series-label.js"></script>
 <script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://cdn.rawgit.com/openlayers/openlayers.github.io/master/en/v5.2.0/build/ol.js"></script>
 <script src="{{ url_for('static', filename='js/device.js') }}"></script>
 
 {% endblock %}

@@ -8,6 +8,7 @@ from wheremi_app import app, Device, Floor, Beacon
 from wheremi_app import sql as db
 from flask import jsonify
 
+
 @app.route("/floors/<home_floor_id>/beacons")
 @login_required
 def list_beacons(home_floor_id):
@@ -17,10 +18,9 @@ def list_beacons(home_floor_id):
     return render_template('beacons.html', username=username, beacons=beacons, floor=home_floor)
 
 
-@app.route("/floors/<home_floor_id>/beacons/new", methods = ['POST', 'GET'])
+@app.route("/floors/<home_floor_id>/beacons/new", methods=['POST', 'GET'])
 @login_required
 def new_beacon(home_floor_id):
-
     if request.method == 'GET':
         username = current_user.username
         floor = Floor.query.filter_by(user=current_user, id=home_floor_id).first()
@@ -32,13 +32,15 @@ def new_beacon(home_floor_id):
         identifier = request.form['identifier']
         x = request.form['x']
         y = request.form['y']
-        new_beacon = Beacon(identifier=identifier, name=name, description=description, home_floor_id=home_floor_id, x=x, y=y)
+        rssi_ref = request.form['rssi_ref']
+        decay = request.form['decay']
+
+        new_beacon = Beacon(identifier=identifier, name=name, description=description,
+                            home_floor_id=home_floor_id, x=x, y=y, rssi_ref=rssi_ref, decay=decay)
         db.session.add(new_beacon)
         db.session.commit()
 
         return redirect('/floors/' + str(home_floor_id) + '/beacons')
-
-
 
 
 @app.route("/floors/<home_floor_id>/beacons/<beacon_id>")
@@ -53,22 +55,25 @@ def beacon(home_floor_id, beacon_id):
 
     abort(401)
 
+
 @app.route("/api/floors/<home_floor_id>/beacons/<beacon_id>")
 @login_required
 def beacon_api(home_floor_id, beacon_id):
-    username = current_user.username
-
+    floor = Floor.query.filter_by(id=home_floor_id).first()
     beacon = Beacon.query.filter_by(id=beacon_id).first()
     if beacon != None:
         if current_user == beacon.home_floor.user:
-            return dumps(beacon.serialize_for_map()), 200, {'ContentType': 'application/json'}
+            return dumps({
+                'beacon': beacon.serialize_for_map(),
+                'floor': floor.serialize()
+            }
+            ), 200, {'ContentType': 'application/json'}
 
     abort(401)
 
 
 @app.route("/api/floors/<home_floor_id>/beacons", methods=['POST', 'GET'])
 def new_beacon_api(home_floor_id):
-
     if request.method == 'POST':
         if Floor.query.filter_by(id=home_floor_id).first():
             data = request.get_json()
@@ -79,7 +84,10 @@ def new_beacon_api(home_floor_id):
                     identifier = beacon['identifier']
                     x = beacon['x']
                     y = beacon['y']
-                    new_beacon = Beacon(identifier=identifier, name=name, description=description, home_floor_id=home_floor_id, x=x, y=y)
+                    rssi_ref = beacon['rssi_ref']
+                    decay = beacon['decay']
+                    new_beacon = Beacon(identifier=identifier, name=name, description=description,
+                                        home_floor_id=home_floor_id, x=x, y=y, rssi_ref=rssi_ref, decay=decay)
                     db.session.add(new_beacon)
                 except:
                     return json.dumps(
@@ -92,4 +100,3 @@ def new_beacon_api(home_floor_id):
             return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
     return abort(404)
-

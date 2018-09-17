@@ -37,6 +37,7 @@ class Floor(db.Model):
 
     def serialize(self):
         return {
+            'id': self.id,
             'name': self.name,
             'y_size': self.y_size,
             'x_size': self.x_size

@@ -12,8 +12,13 @@ $(document).ready(function () {
         success: function (data) {
 
 
-            var plan_size_x = data['x'];
-            var plan_size_y = data['y'];
+            var plan_size_x = data['floor']['x_size'];
+            var plan_size_y = data['floor']['y_size'];
+            var x = data['beacon']['x'];
+            var y = data['beacon']['y'];
+            var name = data['beacon']['name'];
+            var description = data['beacon']['description'];
+            var identifier = data['beacon']['identifier'];
 
             // Map views always need a projection.  Here we just want to map image
             // coordinates directly to map coordinates, so we create a projection that uses
@@ -45,7 +50,8 @@ $(document).ready(function () {
 
             var iconStyle = new ol.style.Style({
                 image: new ol.style.Icon(/** @type {module:ol/style/Icon~Options} */ ({
-                    src: 'https://openlayers.org/en/latest/examples/data/icon.png'
+                    src: 'https://cdn1.iconfinder.com/data/icons/map-and-navigation-9/64/58-512.png',
+                    scale: 0.05
                 }))
             });
 
