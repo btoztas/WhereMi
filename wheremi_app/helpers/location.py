@@ -114,7 +114,7 @@ def get_n_location(device, n):
                     'x_real': beacon.x,
                     'y_real': beacon.y,
                     'x': home_floor.get_x_coordinate_on_map(beacon.x),
-                    'y': home_floor.get_x_coordinate_on_map(beacon.y)
+                    'y': home_floor.get_y_coordinate_on_map(beacon.y)
                 }
             return {
                 'type': 'Unknown',
