@@ -63,7 +63,8 @@ function getMap(n, data) {
     var iconStyle = new ol.style.Style({
         image: new ol.style.Icon(/** @type {module:ol/style/Icon~Options} */ ({
             src: 'http://www.myiconfinder.com/uploads/iconsets/256-256-76f453c62108782f0cad9bfc2da1ae9d.png',
-            scale: 0.2
+            scale: 0.2,
+            offset: [0, 0]
         }))
     });
 

@@ -8,6 +8,7 @@ from wheremi_app import sql
 from wheremi_app.helpers.location import save_message, get_n_location
 import time
 
+
 @app.route("/devices")
 @login_required
 def list_devices():

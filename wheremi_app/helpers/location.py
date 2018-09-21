@@ -76,7 +76,6 @@ def decode_accelerometer_event_timestamp(send_timestamp, relative_timestamp):
 def get_n_location(device, n):
 
     data = device.retrieve_last_location(n)
-    home_floor = device.home_floor
     if data != None:
         timestamp = data['timestamp']
         location = data['location']
@@ -94,7 +93,12 @@ def get_n_location(device, n):
 
             try:
                 beacon_id = location['id']
-                beacon = Beacon.query.filter_by(identifier=beacon_id, home_floor=home_floor).first()
+                beacons = Beacon.query.filter_by(identifier=beacon_id).all()
+                beacon = None
+                for _beacon in beacons:
+                    if _beacon.home_floor.user==device.user:
+                        beacon = _beacon
+                floor = beacon.home_floor
             except:
                 return {
                     'type': 'Unknown',
@@ -110,11 +114,11 @@ def get_n_location(device, n):
                     'beacon': beacon,
                     'beacon_info': beacon.serialize_for_map(),
                     'timestamp': timestamp,
-                    'floor_id': home_floor.id,
+                    'floor_id': floor.id,
                     'x_real': beacon.x,
                     'y_real': beacon.y,
-                    'x': home_floor.get_x_coordinate_on_map(beacon.x),
-                    'y': home_floor.get_y_coordinate_on_map(beacon.y)
+                    'x': floor.get_x_coordinate_on_map(beacon.x),
+                    'y': floor.get_y_coordinate_on_map(beacon.y)
                 }
             return {
                 'type': 'Unknown',
@@ -134,12 +138,22 @@ def get_n_location(device, n):
                     id = entry['id']
                     max = entry['rssi']
 
-            beacon_strong = Beacon.query.filter_by(identifier=id, home_floor=home_floor).first()
+            beacons = Beacon.query.filter_by(identifier=id).all()
+            beacon_strong = None
+            for _beacon in beacons:
+                if _beacon.home_floor.user == device.user:
+                    beacon_strong = _beacon
+            floor = beacon_strong.home_floor
+
             if beacon_strong:
                 measurement = []
 
                 for entry in location['beacons']:
-                    beacon = Beacon.query.filter_by(identifier=entry['id'], home_floor=home_floor).first()
+                    beacons = Beacon.query.filter_by(identifier=entry['id']).all()
+                    beacon = None
+                    for _beacon in beacons:
+                        if _beacon.home_floor.user == device.user:
+                            beacon = _beacon
                     if beacon:
                         measurement.append({
                             'rssi': entry['rssi'],
@@ -153,9 +167,9 @@ def get_n_location(device, n):
                     for zone in location['zone']:
                         map_zone.append(
                             {
-                                'x': home_floor.get_x_coordinate_on_map(zone['x']),
-                                'y': home_floor.get_y_coordinate_on_map(zone['y']),
-                                'radius': home_floor.get_x_coordinate_on_map(zone['radius']),
+                                'x': floor.get_x_coordinate_on_map(zone['x']),
+                                'y': floor.get_y_coordinate_on_map(zone['y']),
+                                'radius': floor.get_x_coordinate_on_map(zone['radius']),
                             }
                         )
 
@@ -166,11 +180,11 @@ def get_n_location(device, n):
                         'beacon': beacon_strong,
                         'beacon_info': beacon_strong.serialize_for_map(),
                         'timestamp': timestamp,
-                        'floor_id': home_floor.id,
+                        'floor_id': floor.id,
                         'x_real': x,
                         'y_real': y,
-                        'x': home_floor.get_x_coordinate_on_map(x),
-                        'y': home_floor.get_x_coordinate_on_map(y),
+                        'x': floor.get_x_coordinate_on_map(x),
+                        'y': floor.get_x_coordinate_on_map(y),
                         'zone': map_zone,
 
                     }
