@@ -235,8 +235,9 @@ def device_location_api(device_id):
         if current_user == device.user:
             location = get_n_location(device, 0)
             if 'beacon' in location: del location['beacon']
-            floor = Floor.query.filter_by(id=location['floor_id']).first()
-            if floor == None:
+            if 'floor_id' in location:
+                floor = Floor.query.filter_by(id=location['floor_id']).first()
+            else:
                 floor = device.home_floor
             return dumps(
                 {
@@ -256,8 +257,9 @@ def device_location_n_api(device_id, n):
         if current_user == device.user:
             location = get_n_location(device, n)
             if 'beacon' in location: del location['beacon']
-            floor = Floor.query.filter_by(id=location['floor_id']).first()
-            if floor == None:
+            if 'floor_id' in location:
+                floor = Floor.query.filter_by(id=location['floor_id']).first()
+            else:
                 floor = device.home_floor
             return dumps(
                 {
