@@ -143,9 +143,9 @@ def get_n_location(device, n):
             for _beacon in beacons:
                 if _beacon.home_floor.user == device.user:
                     beacon_strong = _beacon
-            floor = beacon_strong.home_floor
 
             if beacon_strong:
+                floor = beacon_strong.home_floor
                 measurement = []
 
                 for entry in location['beacons']:
