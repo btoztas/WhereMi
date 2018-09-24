@@ -14,7 +14,16 @@ import time
 def list_devices():
     username = current_user.username
     devices = Device.query.filter_by(user=current_user).all()
-    return render_template('devices.html', username=username, devices=devices)
+    device_info = []
+    for device in devices:
+        status = device.retrieve_last_status()
+        device_info.append({
+            "device": device,
+            "status": status
+
+        })
+
+    return render_template('devices.html', username=username, devices=device_info)
 
 
 @app.route("/devices/new", methods = ['POST', 'GET'])

@@ -35,13 +35,16 @@
         <div class="table-responsive">
             <table class="table" id="dataTable" width="100%" cellspacing="0">
                 <tbody>
-                {% for device in devices %}
+                {% for device_info in devices %}
                 <tr>
                     <td>
-                        {{ device.name }}
+                        {{ device_info.device.name }}
                     </td>
                     <td>
-                        {{ device.description }}
+                        {{ device_info.device.description }}
+                    </td>
+                    <td>
+                        {{ device_info.status.status | decode_status}} @ {{device_info.status.timestamp | format_unix_time }}
                     </td>
                     <td>
                         <button class="btn btn-primary btn-block" type="submit"
