@@ -38,17 +38,27 @@ def location_error(pos, *args):
     zone = args[0]
     N = len(zone)
 
-    # print("TRYING POS:" + str(pos))
+    #print("TRYING POS:" + str(pos))
 
     error = 0
+    # for circle in zone:
+    #     #print("CIRCLE:" + str(circle))
+    #     error += circle.radius - p.distance_to(circle.center)
+    #     #print(error)
+    # mse =  - error / N
+
     for circle in zone:
-        # print("CIRCLE:" + str(circle))
-        error += pow(circle.radius - p.distance_to(circle.center), 2.0)
-        # print(error)
+        #print("CIRCLE:" + str(circle))
+        #error += pow(circle.radius - p.distance_to(circle.center), 2.0)
+        #print(error)
+        error += (1 / circle.radius) * pow(
+            circle.radius - math.sqrt(pow((circle.center.x - p.x), 2) + pow((circle.center.y - p.y), 2)), 2)
+        #error += pow(pow(circle.radius,2 )- pow((circle.center.x - p.x),2) + pow((circle.center.y - p.y),2), 2)
 
     mse = error / N
 
-    print("MSE:" + str(mse))
+
+    # print("MSE:" + str(mse))
     return mse
 
 
@@ -149,10 +159,7 @@ def get_precision_location(measurement):
         zone.append(circle_beacon)
     print("zone:")
     print(zone)
-    if(len(zone)>=3):
-        location = find_pos_lst(zone)
-    else:
-        location = get_location_opt(zone)
+    location = get_location_opt(zone)
 
     area = []
     for circle in zone:
