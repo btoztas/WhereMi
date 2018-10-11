@@ -29,6 +29,11 @@
                 <br>
                 <label for="description">Description</label>
                 <br>
+                <label for="location_type">Beacon Type</label>
+                <select class="form-control" id="location_type" name="home_floor_id">
+                    <option value="proximity" selected>Room-level Location</option>
+                    <option value="accurate">Room-level and Accurate Location</option>
+                </select>
                 <input class="form-control" id="description" type="text" name="description" maxlength="150" required/>
                 <br>
                 <label for="x">X Coordinate on Floor Plan</label>
@@ -45,7 +50,7 @@
                 <br>
                 <label for="rssi_ref">Reference RSSI</label>
                 <br>
-                <input class="form-control" id="rssi_ref" type="number"  step="any" name="rssi_ref" required/>
+                <input class="form-control" id="rssi_ref" type="number" step="any" name="rssi_ref" required/>
                 <br>
             </div>
             <button class="btn btn-primary btn-block" type="submit">New Beacon</button>

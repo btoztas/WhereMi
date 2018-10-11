@@ -449,7 +449,7 @@ $(document).ready(function () {
                 var color;
                 switch (key) {
                     case '0':
-                        state = 'Resting';
+                        state = 'Stationary';
                         color = 'black';
                         break;
                     case '1':
