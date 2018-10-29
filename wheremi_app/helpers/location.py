@@ -138,95 +138,98 @@ def get_n_location(device, n):
             beacon_data = list()
 
             for entry in location['beacons']:
-                beacon_data.append({
-                    'beacon': Beacon.query.filter_by(identifier=entry['id']).first(),
-                    'rssi': entry['rssi']
+                _beacon = Beacon.query.filter_by(identifier=entry['id']).first()
+                if _beacon != None:
+                    beacon_data.append({
+                        'beacon': _beacon,
+                        'rssi': entry['rssi']
 
-                })
+                    })
 
-            # Get stronghest beacon
-            beacon_strong = None
-            for beacon in beacon_data:
-                if max < beacon['rssi']:
-                    beacon_strong = beacon['beacon']
-                    max = beacon['rssi']
-
-            # Assert that all beacons are accuracy
-            for beacon in beacon_data:
-                if beacon['beacon'].accuracy == False:
-                    ACCURACY = False
-                    break
-
-            # Assert that all beacons are on the same floor
-            if ACCURACY:
-                floor_id_first = beacon_data[0]['beacon'].home_floor
-
+            if len(beacon_data) != 0:
+                # Get stronghest beacon
+                beacon_strong = None
                 for beacon in beacon_data:
-                    if floor_id_first != beacon['beacon'].home_floor or beacon['beacon'].home_floor.user != device.user:
+                    if max < beacon['rssi']:
+                        beacon_strong = beacon['beacon']
+                        max = beacon['rssi']
+
+                # Assert that all beacons are accuracy
+                for beacon in beacon_data:
+                    if beacon['beacon'].accuracy == False:
                         ACCURACY = False
                         break
 
-                if len(beacon_data) < 3:
-                    ACCURACY = False
-
-
-            if beacon_strong:
-                floor = beacon_strong.home_floor
-
-
+                # Assert that all beacons are on the same floor
                 if ACCURACY:
-                    measurement = []
+                    floor_id_first = beacon_data[0]['beacon'].home_floor
 
-                    for entry in location['beacons']:
-                        _beacon = Beacon.query.filter_by(identifier=entry['id']).first()
-                        beacon = None
-                        if _beacon.home_floor.user == device.user:
-                            beacon = _beacon
-                        if beacon:
-                            measurement.append({
-                                'rssi': entry['rssi'],
-                                'beacon': beacon
-                            })
-                    location = get_precision_location(measurement)
-                    x = location['x']
-                    y = location['y']
-                    map_zone = []
-                    for zone in location['zone']:
-                        map_zone.append(
-                            {
-                                'x': floor.get_x_coordinate_on_map(zone['x']),
-                                'y': floor.get_y_coordinate_on_map(zone['y']),
-                                'radius': floor.get_x_coordinate_on_map(zone['radius']),
-                            }
-                        )
+                    for beacon in beacon_data:
+                        if floor_id_first != beacon['beacon'].home_floor:
+                            ACCURACY = False
+                            break
 
-                    return {
-                        'type': 'Precision',
-                        'exists': True,
-                        'beacon': beacon_strong,
-                        'beacon_info': beacon_strong.serialize_for_map(),
-                        'timestamp': timestamp,
-                        'floor_id': floor.id,
-                        'x_real': x,
-                        'y_real': y,
-                        'x': floor.get_x_coordinate_on_map(x),
-                        'y': floor.get_x_coordinate_on_map(y),
-                        'zone': map_zone,
+                    if len(beacon_data) < 3:
+                        ACCURACY = False
 
-                    }
-                else:
-                    return {
-                        'type': 'Proximity',
-                        'exists': True,
-                        'beacon': beacon_strong,
-                        'beacon_info': beacon_strong.serialize_for_map(),
-                        'timestamp': timestamp,
-                        'floor_id': floor.id,
-                        'x_real': beacon_strong.x,
-                        'y_real': beacon_strong.y,
-                        'x': floor.get_x_coordinate_on_map(beacon_strong.x),
-                        'y': floor.get_y_coordinate_on_map(beacon_strong.y)
-                    }
+
+                if beacon_strong:
+                    floor = beacon_strong.home_floor
+
+
+                    if ACCURACY:
+                        measurement = []
+
+                        for entry in location['beacons']:
+                            _beacon = Beacon.query.filter_by(identifier=entry['id']).first()
+                            beacon = None
+                            if _beacon.home_floor.user == device.user:
+                                beacon = _beacon
+                            if beacon:
+                                measurement.append({
+                                    'rssi': entry['rssi'],
+                                    'beacon': beacon
+                                })
+                        location = get_precision_location(measurement)
+                        x = location['x']
+                        y = location['y']
+                        map_zone = []
+                        for zone in location['zone']:
+                            map_zone.append(
+                                {
+                                    'x': floor.get_x_coordinate_on_map(zone['x']),
+                                    'y': floor.get_y_coordinate_on_map(zone['y']),
+                                    'radius': floor.get_x_coordinate_on_map(zone['radius']),
+                                }
+                            )
+
+                        return {
+                            'type': 'Precision',
+                            'exists': True,
+                            'beacon': beacon_strong,
+                            'beacon_info': beacon_strong.serialize_for_map(),
+                            'timestamp': timestamp,
+                            'floor_id': floor.id,
+                            'x_real': x,
+                            'y_real': y,
+                            'x': floor.get_x_coordinate_on_map(x),
+                            'y': floor.get_x_coordinate_on_map(y),
+                            'zone': map_zone,
+
+                        }
+                    else:
+                        return {
+                            'type': 'Proximity',
+                            'exists': True,
+                            'beacon': beacon_strong,
+                            'beacon_info': beacon_strong.serialize_for_map(),
+                            'timestamp': timestamp,
+                            'floor_id': floor.id,
+                            'x_real': beacon_strong.x,
+                            'y_real': beacon_strong.y,
+                            'x': floor.get_x_coordinate_on_map(beacon_strong.x),
+                            'y': floor.get_y_coordinate_on_map(beacon_strong.y)
+                        }
             return {
                 'type': 'Unknown',
                 'exists': True,
