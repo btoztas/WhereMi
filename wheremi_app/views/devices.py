@@ -84,19 +84,28 @@ def device_info(device_id):
     return dumps(response), 200, {'ContentType': 'application/json'}
 
 
-@app.route("/api/devices")
+@app.route("/api/devices",  methods = ['POST', 'GET'])
 def devices_api():
     if request.method == 'POST':
 
         devices_list = request.get_json()
         for device in devices_list:
-            name = device['name']
-            user_id = device['user_id']
-            description = device['description']
-            home_floor_id = device['home_floor_id']
-            new_device = Device(user_id=user_id, name=name, description=description, home_floor_id=home_floor_id)
-            sql.session.add(new_device)
-            sql.session.commit()
+            try:
+                name = device['name']
+                user_id = device['user_id']
+                description = device['description']
+                home_floor_id = device['home_floor_id']
+                new_device = Device(user_id=user_id, name=name, description=description, home_floor_id=home_floor_id)
+                sql.session.add(new_device)
+
+            except:
+                return json.dumps(
+                    {
+                        'success': False,
+                        'error': 'Exception adding devices to database'
+                    }), 400, {'ContentType': 'application/json'}
+
+        sql.session.commit()
 
         return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 

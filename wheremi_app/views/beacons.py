@@ -31,11 +31,18 @@ def new_beacon(home_floor_id):
         identifier = request.form['identifier']
         x = request.form['x']
         y = request.form['y']
-        rssi_ref = request.form['rssi_ref']
-        decay = request.form['decay']
+        accuracy_val = request.form['accuracy']
+        if accuracy_val == 'True':
+            accuracy = True
+            rssi_ref = request.form['rssi_ref']
+            decay = request.form['decay']
+            new_beacon = Beacon(identifier=identifier, name=name, description=description,
+                                home_floor_id=home_floor_id, x=x, y=y, accuracy=accuracy, rssi_ref=rssi_ref,
+                                decay=decay)
+        else:
+            new_beacon = Beacon(identifier=identifier, name=name, description=description,
+                                home_floor_id=home_floor_id, x=x, y=y)
 
-        new_beacon = Beacon(identifier=identifier, name=name, description=description,
-                            home_floor_id=home_floor_id, x=x, y=y, rssi_ref=rssi_ref, decay=decay)
         db.session.add(new_beacon)
         db.session.commit()
 
@@ -83,11 +90,18 @@ def new_beacon_api(home_floor_id):
                     identifier = beacon['identifier']
                     x = beacon['x']
                     y = beacon['y']
-                    rssi_ref = beacon['rssi_ref']
-                    decay = beacon['decay']
-                    new_beacon = Beacon(identifier=identifier, name=name, description=description,
-                                        home_floor_id=home_floor_id, x=x, y=y, rssi_ref=rssi_ref, decay=decay)
+                    accuracy = beacon['accuracy']
+                    if accuracy:
+                        rssi_ref = beacon['rssi_ref']
+                        decay = beacon['decay']
+                        new_beacon = Beacon(identifier=identifier, name=name, description=description,
+                                        home_floor_id=home_floor_id, x=x, y=y, accuracy=accuracy, rssi_ref=rssi_ref, decay=decay)
+                    else:
+                        new_beacon = Beacon(identifier=identifier, name=name, description=description,
+                                        home_floor_id=home_floor_id, x=x, y=y)
+
                     db.session.add(new_beacon)
+
                 except:
                     return json.dumps(
                         {

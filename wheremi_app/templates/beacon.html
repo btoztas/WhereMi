@@ -65,7 +65,23 @@
                 <td>
                     <b>Y:</b> {{ device.y }}
                 </td>
+            <tr>
+                <td>
+                    <b>Accuracy Beacon:</b> {{ device.accuracy }}
+                </td>
             </tr>
+            {% if device.accuracy %}
+            <tr>
+                <td>
+                    <b>Decay:</b> {{ device.decay }}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <b>Reference RSSI (1 meter):</b> {{ device.rssi_ref }}
+                </td>
+            </tr>
+            {% endif %}
             <tr>
                 <td>
                     <b>Created at:</b> {{ device.created_at | format_time_from_time_object }}

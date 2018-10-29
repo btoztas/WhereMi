@@ -43,9 +43,15 @@
                     <td>
                         {{ device_info.device.description }}
                     </td>
+                    {% if device_info.status.status %}
                     <td>
                         {{ device_info.status.status | decode_status}} @ {{device_info.status.timestamp | format_unix_time }}
                     </td>
+                    {% else %}
+                    <td>
+                        Status Unknown
+                    </td>
+                    {% endif %}
                     <td>
                         <button class="btn btn-primary btn-block" type="submit"
                                 onclick="window.location.href='/devices/{{ device_info.device.id }}'">

@@ -14,26 +14,32 @@ class Beacon(db.Model):
     x = db.Column(db.Integer, nullable=False, default=0)
     y = db.Column(db.Integer, nullable=False, default=0)
 
-    decay = db.Column(db.Float, nullable=False, default=2.5)
-    rssi_ref = db.Column(db.Float, nullable=False, default=-48)
+    accuracy = db.Column(db.Boolean, nullable=False, default=False)
+
+    decay = db.Column(db.Float)
+    rssi_ref = db.Column(db.Float)
 
     home_floor = db.relationship('Floor', foreign_keys=home_floor_id)
 
-    def __init__(self, identifier, home_floor_id, name, description, x, y, decay, rssi_ref):
+    def __init__(self, identifier, home_floor_id, name, description, x, y, accuracy=False, decay=None, rssi_ref=None):
         self.identifier = identifier
         self.home_floor_id = home_floor_id
         self.name = name
         self.description = description
         self.x = x
         self.y = y
-        self.decay = decay
-        self.rssi_ref = rssi_ref
+        self.accuracy = accuracy
+        if accuracy:
+            self.decay = decay
+            self.rssi_ref = rssi_ref
 
     def __str__(self):
         return "" + str(self.id) + " - " + self.name
 
     def serialize(self):
-        return {
+
+        ret = {
+            'id': self.id,
             'identifier': self.identifier,
             'name': self.name,
             'home_floor_id': self.home_floor_id,
@@ -41,7 +47,14 @@ class Beacon(db.Model):
             'created_at': self.created_at,
             'x': self.x,
             'y': self.y,
+            'accuracy': self.accuracy,
         }
+
+        if self.accuracy:
+            ret['decay'] = self.decay,
+            ret['rssi_ref'] = self.rssi_ref
+
+        return ret
 
     def serialize_for_map(self):
         return {

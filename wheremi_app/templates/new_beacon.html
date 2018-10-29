@@ -30,14 +30,6 @@
                 <label for="description">Description</label>
                 <br>
                 <input class="form-control" id="description" type="text" name="description" maxlength="150" required/>
-                <br>
-                <label for="location_type">Beacon Type</label>
-                <br>
-                <select class="form-control" id="location_type" name="home_floor_id">
-                    <option value="proximity" selected>Room-level Location</option>
-                    <option value="accurate">Room-level and Accurate Location</option>
-                </select>
-                <br>
                 <label for="x">X Coordinate on Floor Plan</label>
                 <br>
                 <input class="form-control" id="x" type="number" name="x" required/>
@@ -46,11 +38,15 @@
                 <br>
                 <input class="form-control" id="y" type="number" name="y" required/>
                 <br>
-                <label for="decay">Path Loss Exponent</label>
+                <label for="location_type">Accuracy Beacon</label>
+                <br>
+                <input type="checkbox" id ='location_type' name="accuracy" value="True">Yes<br>
+                <br>
+                <label for="decay">Path Loss Exponent (Accuracy Only)</label>
                 <br>
                 <input class="form-control" id="decay" type="number" step="any" name="decay" required/>
                 <br>
-                <label for="rssi_ref">Reference RSSI</label>
+                <label for="rssi_ref">Reference RSSI (Accuracy Only)</label>
                 <br>
                 <input class="form-control" id="rssi_ref" type="number" step="any" name="rssi_ref" required/>
                 <br>
