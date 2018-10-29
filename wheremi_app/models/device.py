@@ -38,6 +38,18 @@ class Device(db.Model):
     def __str__(self):
         return "" + str(self.id) + " - " + str(self.user_id) + " - " + self.name
 
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'home_floor_id': self.home_floor_id,
+            'name': self.name,
+            'description': self.description
+        }
+
+
+
     # defining here how the data collections will be named
     def create_message_collection_name(self, user_id, name):
         return "messages_" + str(user_id) + "_" + name

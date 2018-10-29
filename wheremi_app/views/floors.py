@@ -103,3 +103,15 @@ def api_list_beacons(home_floor_id):
         }
         return dumps(data), 200, {'ContentType': 'application/json'}
     abort(404)
+
+
+
+
+@app.route("/api/floors")
+def floors_api():
+
+    if request.method == 'GET':
+        floors = Floor.query.all()
+        return dumps(
+           [  floor.serialize() for floor in floors ]
+        ), 200, {'ContentType': 'application/json'}

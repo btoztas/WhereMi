@@ -42,7 +42,6 @@ def new_device():
         new_device = Device(user_id=current_user.id, name=name, description=description, home_floor_id=home_floor_id)
         sql.session.add(new_device)
         sql.session.commit()
-
         return redirect(url_for('list_devices'))
 
 
@@ -83,6 +82,30 @@ def device_info(device_id):
         'description': device.description
     }
     return dumps(response), 200, {'ContentType': 'application/json'}
+
+
+@app.route("/api/devices")
+def devices_api():
+    if request.method == 'POST':
+
+        devices_list = request.get_json()
+        for device in devices_list:
+            name = device['name']
+            user_id = device['user_id']
+            description = device['description']
+            home_floor_id = device['home_floor_id']
+            new_device = Device(user_id=user_id, name=name, description=description, home_floor_id=home_floor_id)
+            sql.session.add(new_device)
+            sql.session.commit()
+
+        return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
+
+    if request.method == 'GET':
+        devices = Device.query.all()
+        return dumps(
+           [  device.serialize() for device in devices ]
+        ), 200, {'ContentType': 'application/json'}
+
 
 
 @app.route("/api/devices/<device_id>/messages", methods = ['POST', 'GET'])
