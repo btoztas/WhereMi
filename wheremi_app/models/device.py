@@ -176,32 +176,41 @@ class Device(db.Model):
         return documents
 
 
+
     def rename(self, new_name):
 
         self.name=new_name
 
+        db.session.commit()
+
         collection_status = mongo.db[self.status_collection_name]
         self.status_collection_name = self.create_status_collection_name(self.user_id, new_name)
-        collection_status.rename(self.status_collection_name)
+        if collection_status:
+            collection_status.rename(self.status_collection_name)
 
         collection_battery = mongo.db[self.battery_collection_name]
         self.battery_collection_name = self.create_battery_collection_name(self.user_id, new_name)
-        collection_battery.rename(self.battery_collection_name)
+        if collection_battery:
+            collection_battery.rename(self.battery_collection_name)
 
         collection_temperature = mongo.db[self.temperature_collection_name]
         self.temperature_collection_name = self.create_temperature_collection_name(self.user_id, new_name)
-        collection_temperature.rename(self.temperature_collection_name)
+        if collection_temperature:
+            collection_temperature.rename(self.temperature_collection_name)
 
         collection_message = mongo.db[self.message_collection_name]
         self.message_collection_name = self.create_message_collection_name(self.user_id, new_name)
-        collection_message.rename(self.message_collection_name)
+        if collection_message:
+            collection_message.rename(self.message_collection_name)
 
         collection_accelerometer_event = mongo.db[self.accelerometer_event_collection_name]
         self.accelerometer_event_collection_name = self.create_accelerometer_event_collection_name(self.user_id, new_name)
-        collection_accelerometer_event.rename(self.accelerometer_event_collection_name)
+        if collection_accelerometer_event:
+            collection_accelerometer_event.rename(self.accelerometer_event_collection_name)
 
         collection_location = mongo.db[self.location_collection_name]
         self.location_collection_name = self.create_location_collection_name(self.user_id, new_name)
-        collection_location.rename(self.location_collection_name)
+        if collection_location:
+            collection_location.rename(self.location_collection_name)
 
         db.session.commit()
