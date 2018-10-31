@@ -147,7 +147,7 @@ def get_n_location(device, n):
                     })
 
             if len(beacon_data) != 0:
-                # Get stronghest beacon
+                # Get strongest beacon
                 beacon_strong = None
                 for beacon in beacon_data:
                     if max < beacon['rssi']:

@@ -311,3 +311,19 @@ def device_location_n_api(device_id, n):
 
     abort(401)
 
+
+@app.route("/devices/<device_id>/rename", methods = ['POST', 'GET'])
+@login_required
+def rename_device(device_id):
+    if request.method == 'GET':
+        username = current_user.username
+        device = Device.query.filter_by(id=device_id).first()
+        return render_template('rename_device.html', username=username, device=device)
+
+    elif request.method == 'POST':
+        new_name = request.form['new_name']
+        device = Device.query.filter_by(id=device_id).first()
+        device.rename(new_name)
+        return redirect(url_for('list_devices'))
+
+
