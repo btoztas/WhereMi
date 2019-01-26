@@ -75,7 +75,7 @@ def get_device(device_id):
 @app.route("/api/devices/<device_id>")
 @login_required
 def device_info(device_id):
-    device = Device.query.filter_by(id=device_id).first()
+    device = Device.query.filter_by(name=device_id).first()
     response = {
         'id': device.id,
         'name': device.name,
