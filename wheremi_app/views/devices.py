@@ -77,7 +77,6 @@ def get_device(device_id):
 def device_info(device_id):
     device = Device.query.filter_by(name=device_id).first()
     response = {
-        'id': device.id,
         'name': device.name,
         'description': device.description
     }
@@ -121,14 +120,14 @@ def devices_api():
 def device_messages(device_id):
 
     if request.method == 'POST':
-        device = Device.query.filter_by(id=device_id).first()
+        device = Device.query.filter_by(name=device_id).first()
         data = request.get_json()
         save_message(device, data)
 
         return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
 
     if request.method == 'GET':
-        device = Device.query.filter_by(id=device_id).first()
+        device = Device.query.filter_by(name=device_id).first()
         data = device.retrieve_all_messages()
         return dumps(data), 200, {'ContentType': 'application/json'}
 
